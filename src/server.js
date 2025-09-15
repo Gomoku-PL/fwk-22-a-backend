@@ -13,18 +13,9 @@ const io = new Server(server, {
   },
 });
 
-<<<<<<< HEAD
-// Plug in the socket logic
 setupSocket(io);
 
 const PORT = 4000;
 server.listen(PORT, () =>
-  console.log(`🚀 Server is running on http://localhost:${PORT}`)
+  console.log(` Server is running on http://localhost:${PORT}`)
 );
-=======
-app.use(express.json()); 
-
-const gamesRoutes = require('./routes/games.routes'); 
-app.use('/', gamesRoutes); 
-
->>>>>>> 5ddd8dd1c785821f03df27898f3a4e2d0832e3d0
