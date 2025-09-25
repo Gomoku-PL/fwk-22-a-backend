@@ -1,23 +1,25 @@
-
-const express = require("express");
-const {
+import { Router } from "express";
+import {
+  getGame,
   newGame,
   makeMove,
   undoMove,
-} = require("../controllers/games.controller");
+} from "../controllers/games.controller.js";
 
-const router = express.Router();
+const router = Router();
 
-// Create a new game
-// POST /api/games
+router.get("/health", (_req, res) => res.json({ ok: true }));
+
+// Create a new game: POST /api/games
 router.post("/", newGame);
 
-// Make a move
-// POST /api/games/:id/moves
-router.post("/:id/moves", makeMove);
+// Get a game: GET /api/games/:id
+router.get("/:id", getGame);
 
-// Undo last move(s)
-// POST /api/games/:id/undo
+// Make a move: POST /api/games/:id/move
+router.post("/:id/move", makeMove);
+
+// Undo move(s): POST /api/games/:id/undo
 router.post("/:id/undo", undoMove);
 
-module.exports = router;
+export default router;

@@ -1,9 +1,35 @@
+import {
+  getGameDTO,
+  createGame,
+  applyMove,
+  undo,
+} from "../services/game.service.js";
 
-const gameService = require("../services/game.service");
 const isInt = (n) => Number.isInteger(n);
 
-// POST /api/game/new
-async function newGame(req, res) {
+// GET /api/games/:id
+export async function getGame(req, res) {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res
+        .status(400)
+        .json({ error: "MISSING_ID", message: "game id required" });
+    const dto = await getGameDTO(id);
+    return res.status(200).json(dto);
+  } catch (err) {
+    if (err.code === "NOT_FOUND") {
+      return res.status(404).json({ error: err.code, message: err.message });
+    }
+    console.error("getGame error:", err);
+    return res
+      .status(500)
+      .json({ error: "INTERNAL", message: "Failed to fetch game" });
+  }
+}
+
+// POST /api/games
+export async function newGame(req, res) {
   try {
     const {
       size = 15,
@@ -11,6 +37,7 @@ async function newGame(req, res) {
       winLength = 5,
       allowOverlines = true,
     } = req.body || {};
+
     if (!isInt(size) || size < 5 || size > 25)
       return res
         .status(400)
@@ -28,7 +55,7 @@ async function newGame(req, res) {
         .status(400)
         .json({ error: "INVALID_OVERLINES", message: "boolean" });
 
-    const dto = await gameService.createGame({
+    const dto = await createGame({
       size,
       firstPlayer,
       winLength,
@@ -43,8 +70,8 @@ async function newGame(req, res) {
   }
 }
 
-// POST /api/game/:id/move
-async function makeMove(req, res) {
+// POST /api/games/:id/move
+export async function makeMove(req, res) {
   try {
     const { id } = req.params;
     const { x, y } = req.body || {};
@@ -57,7 +84,7 @@ async function makeMove(req, res) {
         .status(400)
         .json({ error: "INVALID_COORDS", message: "x,y integers" });
 
-    const dto = await gameService.applyMove({ gameId: id, x, y });
+    const dto = await applyMove({ gameId: id, x, y });
     return res.status(200).json(dto);
   } catch (err) {
     switch (err.code) {
@@ -78,8 +105,8 @@ async function makeMove(req, res) {
   }
 }
 
-// POST /api/game/:id/undo
-async function undoMove(req, res) {
+// POST /api/games/:id/undo
+export async function undoMove(req, res) {
   try {
     const { id } = req.params;
     const { steps = 1 } = req.body || {};
@@ -92,7 +119,7 @@ async function undoMove(req, res) {
         .status(400)
         .json({ error: "INVALID_STEPS", message: "steps >= 1" });
 
-    const dto = await gameService.undo({ gameId: id, steps });
+    const dto = await undo({ gameId: id, steps });
     return res.status(200).json(dto);
   } catch (err) {
     switch (err.code) {
@@ -110,5 +137,3 @@ async function undoMove(req, res) {
     }
   }
 }
-
-module.exports = { newGame, makeMove, undoMove };
