@@ -2,7 +2,8 @@
 let rooms = {};
 
 // Import validateMove
-const validateMove = require("../utils/validateMove.js").default || require("../utils/validateMove.js");
+import validateMove from "../utils/validateMove.js";
+
 
 // In-memory board state for demo (reset on server restart)
 let boards = {};
