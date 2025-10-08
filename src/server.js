@@ -1,37 +1,16 @@
 import http from "http";
-import express from "express";
-import cors from "cors";
 import { Server } from "socket.io";
-
-import gamesRoutes from "./routes/games.routes.js";
-import healthRoutes from "./routes/health.routes.js";
+import app from "./app.js"; // ✅ this already includes express + routes
 import { setupSocket } from "./socket/socketHandler.js";
 
-const app = express();
-const server = http.createServer(app);
-
-// ---- CORS allow list
 const allowedOrigins = [
   "http://localhost:5173", // Vite dev
   "https://gomoku-pl.github.io", // GitHub Pages
 ];
 
-// Apply CORS BEFORE routes
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+const server = http.createServer(app);
 
-
-app.use(express.json());
-
-// Routes
-app.use("/api/games", gamesRoutes);
-app.use(healthRoutes); // expects this router to define e.g. GET /health
-
-// Socket.IO with matching CORS
+// ✅ Socket.IO with CORS configuration
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -40,12 +19,12 @@ const io = new Server(server, {
   },
 });
 
-// Wire sockets
+// ✅ Wire sockets
 setupSocket(io);
 
-// Start server
+// ✅ Start the server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
 });
