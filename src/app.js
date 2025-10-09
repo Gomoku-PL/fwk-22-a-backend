@@ -1,18 +1,23 @@
 import express from "express";
 import cors from "cors";
+
+// Routes
 import gamesRoutes from "./routes/games.routes.js";
-import heaathRouters from "./routes/health.routes.js"
+import healthRoutes from "./routes/health.routes.js";
+import dataAccessRoutes from "./routes/dataAccess.routes.js";
 
 const app = express();
 
-app.use(heaathRouters)
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// mount your routes
-app.use("/api/games", gamesRoutes);
+// Mount routers
+app.use("/api/data-access", dataAccessRoutes); // Your new data access endpoint
+app.use("/api/games", gamesRoutes);             // Game endpoints
+app.use(healthRoutes);                           // Health check routes
 
-// simple health
+// Simple health check (redundant if you already have /health in healthRoutes)
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 export default app;
