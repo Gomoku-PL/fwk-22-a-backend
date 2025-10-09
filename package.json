@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "mongoose": "^8.19.1",
     "socket.io": "^4.8.1"
   },
   "type": "module",
@@ -9,11 +11,15 @@
   "description": "",
   "main": "index.js",
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.10"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "dev:memory": "cross-env STORAGE_TYPE=memory nodemon src/server.js",
+    "dev:mongodb": "cross-env STORAGE_TYPE=mongodb nodemon src/server.js",
+    "start:mongo": "mongod --dbpath ./data/db"
   },
   "repository": {
     "type": "git",

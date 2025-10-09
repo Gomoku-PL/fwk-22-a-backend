@@ -5,7 +5,9 @@ import { Server } from "socket.io";
 
 import gamesRoutes from "./routes/games.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import consentRoutes from "./routes/consent.routes.js";
 import { setupSocket } from "./socket/socketHandler.js";
+import { connectMongoDB } from "./config/database.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -24,11 +26,14 @@ app.use(
   })
 );
 
-
 app.use(express.json());
+
+// Initialize database connection
+await connectMongoDB();
 
 // Routes
 app.use("/api/games", gamesRoutes);
+app.use("/api/consent", consentRoutes);
 app.use(healthRoutes); // expects this router to define e.g. GET /health
 
 // Socket.IO with matching CORS
