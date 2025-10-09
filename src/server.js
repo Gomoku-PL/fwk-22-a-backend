@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import gamesRoutes from "./routes/games.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import consentRoutes from "./routes/consent.routes.js";
+import consentAuditRoutes from "./routes/consentAudit.routes.js";
 import { setupSocket } from "./socket/socketHandler.js";
 import { connectMongoDB } from "./config/database.js";
 
@@ -34,6 +35,7 @@ await connectMongoDB();
 // Routes
 app.use("/api/games", gamesRoutes);
 app.use("/api/consent", consentRoutes);
+app.use("/api/consent/audit", consentAuditRoutes);
 app.use(healthRoutes);
 
 // Socket.IO with matching CORS
