@@ -1,12 +1,14 @@
 import http from "http";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
 
 import gamesRoutes from "./routes/games.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import consentRoutes from "./routes/consent.routes.js";
 import consentAuditRoutes from "./routes/consentAudit.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import { setupSocket } from "./socket/socketHandler.js";
 import { connectMongoDB } from "./config/database.js";
 
@@ -28,6 +30,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(cookieParser()); // For secure refresh token cookies
 
 // Initialize database connection
 await connectMongoDB();
@@ -36,6 +39,7 @@ await connectMongoDB();
 app.use("/api/games", gamesRoutes);
 app.use("/api/consent", consentRoutes);
 app.use("/api/consent/audit", consentAuditRoutes);
+app.use("/api/auth", authRoutes);
 app.use(healthRoutes);
 
 // Socket.IO with matching CORS
@@ -55,4 +59,5 @@ const PORT = process.env.PORT || 4000;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
+  console.log("🔐 Authentication system enabled with GDPR Article 32 compliance");
 });
