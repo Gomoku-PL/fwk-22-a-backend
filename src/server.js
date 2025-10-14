@@ -10,9 +10,11 @@ import consentRoutes from "./routes/consent.routes.js";
 import consentAuditRoutes from "./routes/consentAudit.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import dataRetentionRoutes from "./routes/dataRetention.routes.js";
+import updateComplianceRoutes from "./routes/updateCompliance.routes.js";
 import { setupSocket } from "./socket/socketHandler.js";
 import { connectMongoDB } from "./config/database.js";
 import dataRetentionService from "./services/dataRetention.service.js";
+import updateComplianceService from "./services/updateCompliance.service.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +45,7 @@ app.use("/api/consent", consentRoutes);
 app.use("/api/consent/audit", consentAuditRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/admin/retention", dataRetentionRoutes);
+app.use("/api/admin/compliance", updateComplianceRoutes);
 app.use(healthRoutes);
 
 // Socket.IO with matching CORS
@@ -60,6 +63,9 @@ setupSocket(io);
 // Initialize data retention service
 await dataRetentionService.initialize();
 
+// Initialize compliance update service
+await updateComplianceService.initialize();
+
 // Start server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, "0.0.0.0", () => {
@@ -69,6 +75,7 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log(
     "Data retention service active - GDPR Articles 5 & 17 compliance"
   );
+  console.log("Compliance update service active - GDPR Article 24 compliance");
 });
 
 // Graceful shutdown handling
@@ -77,6 +84,9 @@ const gracefulShutdown = async (signal) => {
 
   // Stop data retention service
   await dataRetentionService.stop();
+
+  // Stop compliance update service
+  await updateComplianceService.stop();
 
   // Close server
   server.close(() => {
