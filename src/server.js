@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
+import { xssProtection } from "./middleware/xss.middleware.js";
 
 import gamesRoutes from "./routes/games.routes.js";
 import healthRoutes from "./routes/health.routes.js";
@@ -36,6 +37,14 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser()); // For secure refresh token cookies
+
+// XSS Protection middleware
+app.use(xssProtection({
+  sanitizeBody: true,
+  sanitizeQuery: true,
+  sanitizeParams: true,
+  setHeaders: true
+}));
 
 // Initialize database connection
 await connectMongoDB();
