@@ -13,6 +13,7 @@ import dataRetentionRoutes from "./routes/dataRetention.routes.js";
 import { setupSocket } from "./socket/socketHandler.js";
 import { connectMongoDB } from "./config/database.js";
 import dataRetentionService from "./services/dataRetention.service.js";
+import thirdPartyRouter from "./routes/thirdParty.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,7 @@ app.use(cookieParser()); // For secure refresh token cookies
 await connectMongoDB();
 
 // Routes
+app.use("/api", thirdPartyRouter);
 app.use("/api/games", gamesRoutes);
 app.use("/api/consent", consentRoutes);
 app.use("/api/consent/audit", consentAuditRoutes);
