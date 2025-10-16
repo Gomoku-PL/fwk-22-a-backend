@@ -1,6 +1,4 @@
-
 let rooms = {};
-
 
 import validateMove from "../utils/validateMove.js";
 
@@ -21,11 +19,13 @@ export function setupSocket(io) {
       io.to(roomId).emit("roomData", rooms[roomId].players);
     });
 
-
     socket.on("move", (move) => {
       const { roomId, row, col, player } = move;
       if (!roomId || typeof row !== "number" || typeof col !== "number") {
-        socket.emit("moveResult", { valid: false, reason: "Invalid move data" });
+        socket.emit("moveResult", {
+          valid: false,
+          reason: "Invalid move data",
+        });
         return;
       }
 
@@ -61,7 +61,9 @@ export function setupSocket(io) {
     socket.on("disconnect", () => {
       console.log("🔌 Player disconnected:", socket.id);
       for (const roomId in rooms) {
-        rooms[roomId].players = rooms[roomId].players.filter((p) => p !== socket.id);
+        rooms[roomId].players = rooms[roomId].players.filter(
+          (p) => p !== socket.id,
+        );
         io.to(roomId).emit("roomData", rooms[roomId].players);
       }
     });

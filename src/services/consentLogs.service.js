@@ -1,6 +1,6 @@
-import ConsentLogsModel from '../models/consentLogs.model.js';
-import consentLogsDb from '../models/consentLogsdb.js';
-import { isUsingMongoDB } from '../config/database.js';
+import ConsentLogsModel from "../models/consentLogs.model.js";
+import consentLogsDb from "../models/consentLogsdb.js";
+import { isUsingMongoDB } from "../config/database.js";
 
 /**
  * Unified Consent Logs Service
@@ -17,19 +17,20 @@ class ConsentLogsService {
         eventType: eventData.eventType,
         purposes: eventData.purposes || {},
         previousPurposes: eventData.previousPurposes || {},
-        legalBasis: eventData.legalBasis || 'consent',
-        consentMethod: eventData.consentMethod || 'api_call',
-        ipAddress: eventData.ipAddress || 'unknown',
-        userAgent: eventData.userAgent || 'unknown',
+        legalBasis: eventData.legalBasis || "consent",
+        consentMethod: eventData.consentMethod || "api_call",
+        ipAddress: eventData.ipAddress || "unknown",
+        userAgent: eventData.userAgent || "unknown",
         sessionId: eventData.sessionId || null,
-        processingPurpose: eventData.processingPurpose || 'User consent management',
-        dataCategories: eventData.dataCategories || ['personal_data']
+        processingPurpose:
+          eventData.processingPurpose || "User consent management",
+        dataCategories: eventData.dataCategories || ["personal_data"],
       };
 
       if (isUsingMongoDB()) {
         // Generate audit ID for MongoDB
         logData.auditId = this.generateAuditId();
-        
+
         const log = new ConsentLogsModel(logData);
         await log.save();
         return log.toObject();
@@ -37,7 +38,7 @@ class ConsentLogsService {
         return consentLogsDb.addLog(logData);
       }
     } catch (error) {
-      console.error('Error logging consent event:', error);
+      console.error("Error logging consent event:", error);
       throw error;
     }
   }
@@ -53,7 +54,7 @@ class ConsentLogsService {
         return consentLogsDb.getAuditTrail(filters);
       }
     } catch (error) {
-      console.error('Error retrieving audit trail:', error);
+      console.error("Error retrieving audit trail:", error);
       return [];
     }
   }
@@ -69,7 +70,7 @@ class ConsentLogsService {
         return consentLogsDb.getUserLogs(userId);
       }
     } catch (error) {
-      console.error('Error retrieving user audit trail:', error);
+      console.error("Error retrieving user audit trail:", error);
       return [];
     }
   }
@@ -85,7 +86,7 @@ class ConsentLogsService {
         return consentLogsDb.getComplianceReport(startDate, endDate);
       }
     } catch (error) {
-      console.error('Error generating compliance report:', error);
+      console.error("Error generating compliance report:", error);
       return [];
     }
   }
@@ -97,10 +98,10 @@ class ConsentLogsService {
     try {
       if (isUsingMongoDB()) {
         const totalLogs = await ConsentLogsModel.countDocuments();
-        const uniqueUsers = await ConsentLogsModel.distinct('userId');
+        const uniqueUsers = await ConsentLogsModel.distinct("userId");
         const eventTypes = await ConsentLogsModel.aggregate([
-          { $group: { _id: '$eventType', count: { $sum: 1 } } },
-          { $project: { eventType: '$_id', count: 1, _id: 0 } }
+          { $group: { _id: "$eventType", count: { $sum: 1 } } },
+          { $project: { eventType: "$_id", count: 1, _id: 0 } },
         ]);
 
         return {
@@ -110,13 +111,13 @@ class ConsentLogsService {
             acc[item.eventType] = item.count;
             return acc;
           }, {}),
-          storageType: 'mongodb'
+          storageType: "mongodb",
         };
       } else {
         return consentLogsDb.getStats();
       }
     } catch (error) {
-      console.error('Error retrieving audit stats:', error);
+      console.error("Error retrieving audit stats:", error);
       return { error: error.message };
     }
   }

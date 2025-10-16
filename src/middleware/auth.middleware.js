@@ -1,7 +1,7 @@
-import jwtService from '../services/jwt.service.js';
-import UserModel from '../models/user.model.js';
-import userDb from '../models/userdb.js';
-import { isUsingMongoDB } from '../config/database.js';
+import jwtService from "../services/jwt.service.js";
+import UserModel from "../models/user.model.js";
+import userDb from "../models/userdb.js";
+import { isUsingMongoDB } from "../config/database.js";
 
 /**
  * JWT Authentication Middleware
@@ -9,19 +9,19 @@ import { isUsingMongoDB } from '../config/database.js';
  */
 export const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Access token required'
+        message: "Access token required",
       });
     }
 
     // Verify token
     const decoded = jwtService.verifyAccessToken(token);
-    
+
     // Get user data
     let user;
     if (isUsingMongoDB()) {
@@ -33,32 +33,33 @@ export const authenticateToken = async (req, res, next) => {
     if (!user || !user.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'User not found or inactive'
+        message: "User not found or inactive",
       });
     }
 
     // Check if account is locked
-    const isLocked = isUsingMongoDB() ? user.isLocked : userDb.isAccountLocked(user);
+    const isLocked = isUsingMongoDB()
+      ? user.isLocked
+      : userDb.isAccountLocked(user);
     if (isLocked) {
       return res.status(423).json({
         success: false,
-        message: 'Account is locked'
+        message: "Account is locked",
       });
     }
 
     // Attach user to request
     req.user = isUsingMongoDB() ? user.toObject() : userDb.sanitizeUser(user);
     req.userId = user.id || user._id;
-    
-    next();
 
+    next();
   } catch (error) {
-    console.error('Auth middleware error:', error.message);
-    
+    console.error("Auth middleware error:", error.message);
+
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired token',
-      error: error.message
+      message: "Invalid or expired token",
+      error: error.message,
     });
   }
 };
@@ -68,8 +69,8 @@ export const authenticateToken = async (req, res, next) => {
  */
 export const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
       req.user = null;
@@ -78,7 +79,7 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     const decoded = jwtService.verifyAccessToken(token);
-    
+
     let user;
     if (isUsingMongoDB()) {
       user = await UserModel.findById(decoded.userId);
@@ -95,7 +96,6 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     next();
-
   } catch (error) {
     // Don't fail on optional auth
     req.user = null;

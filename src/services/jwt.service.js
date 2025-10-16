@@ -1,8 +1,9 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
-const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
+const JWT_SECRET =
+  process.env.JWT_SECRET || "fallback-secret-key-change-in-production";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 
 class JWTService {
   /**
@@ -11,8 +12,8 @@ class JWTService {
   generateAccessToken(payload) {
     return jwt.sign(payload, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
-      issuer: 'fwk-22-a-backend',
-      audience: 'fwk-22-a-frontend'
+      issuer: "fwk-22-a-backend",
+      audience: "fwk-22-a-frontend",
     });
   }
 
@@ -22,8 +23,8 @@ class JWTService {
   generateRefreshToken(payload) {
     return jwt.sign(payload, JWT_SECRET, {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-      issuer: 'fwk-22-a-backend',
-      audience: 'fwk-22-a-frontend'
+      issuer: "fwk-22-a-backend",
+      audience: "fwk-22-a-frontend",
     });
   }
 
@@ -33,11 +34,11 @@ class JWTService {
   verifyAccessToken(token) {
     try {
       return jwt.verify(token, JWT_SECRET, {
-        issuer: 'fwk-22-a-backend',
-        audience: 'fwk-22-a-frontend'
+        issuer: "fwk-22-a-backend",
+        audience: "fwk-22-a-frontend",
       });
     } catch (error) {
-      throw new Error('Invalid or expired token');
+      throw new Error("Invalid or expired token");
     }
   }
 
@@ -47,11 +48,11 @@ class JWTService {
   verifyRefreshToken(token) {
     try {
       return jwt.verify(token, JWT_SECRET, {
-        issuer: 'fwk-22-a-backend',
-        audience: 'fwk-22-a-frontend'
+        issuer: "fwk-22-a-backend",
+        audience: "fwk-22-a-frontend",
       });
     } catch (error) {
-      throw new Error('Invalid or expired refresh token');
+      throw new Error("Invalid or expired refresh token");
     }
   }
 
@@ -68,12 +69,12 @@ class JWTService {
   generateTokenPair(payload) {
     const accessToken = this.generateAccessToken(payload);
     const refreshToken = this.generateRefreshToken(payload);
-    
+
     return {
       accessToken,
       refreshToken,
       expiresIn: JWT_EXPIRES_IN,
-      tokenType: 'Bearer'
+      tokenType: "Bearer",
     };
   }
 }

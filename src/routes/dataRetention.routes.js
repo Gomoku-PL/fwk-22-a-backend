@@ -27,7 +27,7 @@ const retentionConfigValidation = [
     .optional()
     .isInt({ min: 365, max: 3650 })
     .withMessage(
-      "Withdrawn consent retention must be between 365 and 3650 days"
+      "Withdrawn consent retention must be between 365 and 3650 days",
     ),
 
   body("consentData.logs")

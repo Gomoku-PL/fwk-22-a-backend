@@ -27,7 +27,7 @@ class ConsentDatabase {
       userId,
       ...consentData,
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     };
 
     // Store current consent
@@ -37,7 +37,7 @@ class ConsentDatabase {
     if (!this.consentHistory.has(userId)) {
       this.consentHistory.set(userId, []);
     }
-    this.consentHistory.get(userId).push({...consentRecord});
+    this.consentHistory.get(userId).push({ ...consentRecord });
 
     return consentRecord;
   }
@@ -66,14 +66,14 @@ class ConsentDatabase {
         marketing: false,
         analytics: false,
         personalization: false,
-        thirdParty: false
+        thirdParty: false,
       },
       withdrawalDate: new Date().toISOString(),
       consentDate: null,
-      ipAddress: 'system',
-      userAgent: 'system-withdrawal'
+      ipAddress: "system",
+      userAgent: "system-withdrawal",
     };
-    
+
     return this.setConsent(userId, withdrawnConsent);
   }
 
@@ -98,9 +98,11 @@ class ConsentDatabase {
   getStats() {
     return {
       totalUsers: this.consents.size,
-      totalHistoryRecords: Array.from(this.consentHistory.values())
-        .reduce((sum, history) => sum + history.length, 0),
-      storageType: 'memory'
+      totalHistoryRecords: Array.from(this.consentHistory.values()).reduce(
+        (sum, history) => sum + history.length,
+        0,
+      ),
+      storageType: "memory",
     };
   }
 }

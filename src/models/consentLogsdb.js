@@ -16,26 +16,26 @@ class ConsentLogsDatabase {
   addLog(logData) {
     const timestamp = new Date().toISOString();
     const auditId = this.generateAuditId();
-    
+
     const logEntry = {
       ...logData,
       auditId,
       createdAt: timestamp,
       updatedAt: timestamp,
-      complianceVersion: 'GDPR-2018',
-      dataController: 'FWK-22-A Backend System',
-      retentionPeriod: '7 years'
+      complianceVersion: "GDPR-2018",
+      dataController: "FWK-22-A Backend System",
+      retentionPeriod: "7 years",
     };
 
     // Store in main logs array
     this.logs.push(logEntry);
-    
+
     // Index by user
     if (!this.logsByUser.has(logData.userId)) {
       this.logsByUser.set(logData.userId, []);
     }
     this.logsByUser.get(logData.userId).push(logEntry);
-    
+
     // Index by audit ID
     this.logsByAuditId.set(auditId, logEntry);
 
@@ -49,24 +49,34 @@ class ConsentLogsDatabase {
     let filteredLogs = [...this.logs];
 
     if (filters.userId) {
-      filteredLogs = filteredLogs.filter(log => log.userId === filters.userId);
+      filteredLogs = filteredLogs.filter(
+        (log) => log.userId === filters.userId,
+      );
     }
 
     if (filters.eventType) {
-      filteredLogs = filteredLogs.filter(log => log.eventType === filters.eventType);
+      filteredLogs = filteredLogs.filter(
+        (log) => log.eventType === filters.eventType,
+      );
     }
 
     if (filters.startDate) {
       const startDate = new Date(filters.startDate);
-      filteredLogs = filteredLogs.filter(log => new Date(log.createdAt) >= startDate);
+      filteredLogs = filteredLogs.filter(
+        (log) => new Date(log.createdAt) >= startDate,
+      );
     }
 
     if (filters.endDate) {
       const endDate = new Date(filters.endDate);
-      filteredLogs = filteredLogs.filter(log => new Date(log.createdAt) <= endDate);
+      filteredLogs = filteredLogs.filter(
+        (log) => new Date(log.createdAt) <= endDate,
+      );
     }
 
-    return filteredLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return filteredLogs.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    );
   }
 
   /**
@@ -89,36 +99,38 @@ class ConsentLogsDatabase {
   getComplianceReport(startDate, endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
-    const filteredLogs = this.logs.filter(log => {
+
+    const filteredLogs = this.logs.filter((log) => {
       const logDate = new Date(log.createdAt);
       return logDate >= start && logDate <= end;
     });
 
     const reportData = {};
-    
-    filteredLogs.forEach(log => {
-      const date = log.createdAt.split('T')[0]; // Extract date part
+
+    filteredLogs.forEach((log) => {
+      const date = log.createdAt.split("T")[0]; // Extract date part
       const key = `${date}_${log.eventType}`;
-      
+
       if (!reportData[key]) {
         reportData[key] = {
           eventType: log.eventType,
           date,
           count: 0,
-          users: new Set()
+          users: new Set(),
         };
       }
-      
+
       reportData[key].count++;
       reportData[key].users.add(log.userId);
     });
 
-    return Object.values(reportData).map(item => ({
-      ...item,
-      uniqueUsers: item.users.size,
-      users: undefined // Remove Set object
-    })).sort((a, b) => b.date.localeCompare(a.date));
+    return Object.values(reportData)
+      .map((item) => ({
+        ...item,
+        uniqueUsers: item.users.size,
+        users: undefined, // Remove Set object
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
   }
 
   /**
@@ -128,8 +140,9 @@ class ConsentLogsDatabase {
     const eventTypeCounts = {};
     const userCounts = new Set();
 
-    this.logs.forEach(log => {
-      eventTypeCounts[log.eventType] = (eventTypeCounts[log.eventType] || 0) + 1;
+    this.logs.forEach((log) => {
+      eventTypeCounts[log.eventType] =
+        (eventTypeCounts[log.eventType] || 0) + 1;
       userCounts.add(log.userId);
     });
 
@@ -137,7 +150,7 @@ class ConsentLogsDatabase {
       totalLogs: this.logs.length,
       uniqueUsers: userCounts.size,
       eventTypes: eventTypeCounts,
-      storageType: 'memory'
+      storageType: "memory",
     };
   }
 
