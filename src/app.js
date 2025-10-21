@@ -2,10 +2,10 @@ import express from "express";
 import cors from "cors";
 
 // Routes
-import gamesRoutes from "./routes/games.routes.js";
-import healthRoutes from "./routes/health.routes.js";
-import dataAccessRoutes from "./routes/dataAccess.routes.js";
-import dataPortabilityRoutes from "./routes/dataPortability.routes.js";
+import gamesRoutes from "../routes/games.routes.js";
+import healthRoutes from "../routes/health.routes.js";
+import dataAccessRoutes from "../routes/dataAccess.routes.js";
+import dataPortabilityRoutes from "../routes/dataPortability.routes.js";
 
 const app = express();
 
