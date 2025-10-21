@@ -1,4 +1,6 @@
 import http from "http";
+import https from "https";
+import fs from "node:fs";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -19,11 +21,29 @@ import updateComplianceService from "./services/updateCompliance.service.js";
 import thirdPartyRouter from "./routes/thirdParty.routes.js";
 
 const app = express();
-const server = http.createServer(app);
+// Optional HTTPS for local dev
+let server;
+if (process.env.BACKEND_HTTPS === "1") {
+  const keyPath = process.env.HTTPS_KEY;
+  const certPath = process.env.HTTPS_CERT;
+  if (!keyPath || !certPath) {
+    throw new Error(
+      "BACKEND_HTTPS=1 set but HTTPS_KEY/HTTPS_CERT not provided in env"
+    );
+  }
+  const options = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  };
+  server = https.createServer(options, app);
+} else {
+  server = http.createServer(app);
+}
 
 // ---- CORS allow list
 const allowedOrigins = [
-  "http://localhost:5173", // Vite dev
+  "http://localhost:5173", // Vite dev (HTTP)
+  "https://localhost:5173", // Vite dev (HTTPS)
   "https://gomoku-pl.github.io", // GitHub Pages
 ];
 
@@ -82,7 +102,8 @@ await updateComplianceService.initialize();
 // Start server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  const scheme = process.env.BACKEND_HTTPS === "1" ? "https" : "http";
+  console.log(`Server running on ${scheme}://localhost:${PORT}`);
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
   console.log("Authentication system enabled with GDPR Article 32 compliance");
   console.log(

@@ -16,7 +16,7 @@ if (storageType === "mongodb") {
       createdAt: { type: Date, default: Date.now },
       revokedAt: { type: Date },
     },
-    { collection: "refresh_tokens" }
+    { collection: "refresh_tokens" },
   );
 
   RefreshTokenModel =
@@ -38,7 +38,7 @@ if (storageType === "mongodb") {
     static async findOne(query) {
       return (
         memory.find((m) =>
-          Object.entries(query).every(([k, v]) => m[k] === v)
+          Object.entries(query).every(([k, v]) => m[k] === v),
         ) || null
       );
     }

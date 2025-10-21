@@ -31,6 +31,7 @@
     "dev": "nodemon src/server.js",
     "dev:memory": "cross-env STORAGE_TYPE=memory nodemon src/server.js",
     "dev:mongodb": "cross-env STORAGE_TYPE=mongodb nodemon src/server.js",
+    "dev:https": "cross-env BACKEND_HTTPS=1 HTTPS_KEY=../dev-setup/certs/localhost-key.pem HTTPS_CERT=../dev-setup/certs/localhost.pem PORT=4001 nodemon src/server.js",
     "start:mongo": "mongod --dbpath ./data/db",
     "strip:comments": "node ./scripts/removeComments.mjs",
     "format:repo": "node ./scripts/formatRepo.mjs"
