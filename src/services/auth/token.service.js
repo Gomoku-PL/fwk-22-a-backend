@@ -20,7 +20,7 @@ export async function createRefreshToken(user, prevTokenValue = null) {
   if (prevTokenValue) {
     await RefreshToken.updateOne(
       { token: prevTokenValue, userId: user.id, revoked: false },
-      { $set: { revoked: true, revokedAt: new Date() } }
+      { $set: { revoked: true, revokedAt: new Date() } },
     );
   }
   const tokenValue = generateRefreshTokenValue();
@@ -37,7 +37,7 @@ export async function createRefreshToken(user, prevTokenValue = null) {
 export async function revokeAllRefreshTokens(userId) {
   await RefreshToken.updateMany(
     { userId, revoked: false },
-    { $set: { revoked: true, revokedAt: new Date() } }
+    { $set: { revoked: true, revokedAt: new Date() } },
   );
 }
 
@@ -47,7 +47,11 @@ export async function isRefreshTokenValid(tokenValue, userId) {
 }
 
 // Enforce rotation with reuse detection
-export async function rotateRefreshToken({ userId, presentedToken, userForNewToken }) {
+export async function rotateRefreshToken({
+  userId,
+  presentedToken,
+  userForNewToken,
+}) {
   const token = await RefreshToken.findOne({ token: presentedToken, userId });
   if (!token || token.revoked) {
     // Reuse or invalid — revoke entire family and deny
@@ -59,9 +63,11 @@ export async function rotateRefreshToken({ userId, presentedToken, userForNewTok
   // Valid path: revoke current and issue new pair
   await RefreshToken.updateOne(
     { token: presentedToken, userId, revoked: false },
-    { $set: { revoked: true, revokedAt: new Date() } }
+    { $set: { revoked: true, revokedAt: new Date() } },
   );
-  const refreshToken = await createRefreshToken(userForNewToken || { id: userId });
+  const refreshToken = await createRefreshToken(
+    userForNewToken || { id: userId },
+  );
   const accessToken = createAccessToken(userForNewToken || { id: userId });
   return { accessToken, refreshToken };
 }

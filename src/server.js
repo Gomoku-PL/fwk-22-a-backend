@@ -1,7 +1,10 @@
 import http from "http";
+import https from "https";
+import fs from "node:fs";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 import { Server } from "socket.io";
 import { xssProtection } from "./middleware/xss.middleware.js";
 
@@ -19,11 +22,29 @@ import updateComplianceService from "./services/updateCompliance.service.js";
 import thirdPartyRouter from "./routes/thirdParty.routes.js";
 
 const app = express();
-const server = http.createServer(app);
+// Optional HTTPS for local dev
+let server;
+if (process.env.BACKEND_HTTPS === "1") {
+  const keyPath = process.env.HTTPS_KEY;
+  const certPath = process.env.HTTPS_CERT;
+  if (!keyPath || !certPath) {
+    throw new Error(
+      "BACKEND_HTTPS=1 set but HTTPS_KEY/HTTPS_CERT not provided in env"
+    );
+  }
+  const options = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  };
+  server = https.createServer(options, app);
+} else {
+  server = http.createServer(app);
+}
 
 // ---- CORS allow list
 const allowedOrigins = [
-  "http://localhost:5173", // Vite dev
+  "http://localhost:5173", // Vite dev (HTTP)
+  "https://localhost:5173", // Vite dev (HTTPS)
   "https://gomoku-pl.github.io", // GitHub Pages
 ];
 
@@ -32,11 +53,30 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json());
 app.use(cookieParser()); // For secure refresh token cookies
+
+// Session configuration for security
+app.use(
+  session({
+    secret:
+      process.env.SESSION_SECRET || "fallback-dev-secret-change-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure:
+        process.env.NODE_ENV === "production" ||
+        process.env.BACKEND_HTTPS === "1",
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: "strict",
+    },
+    name: "sessionId", // Custom session cookie name
+  })
+);
 
 // XSS Protection middleware
 app.use(
@@ -45,7 +85,7 @@ app.use(
     sanitizeQuery: true,
     sanitizeParams: true,
     setHeaders: true,
-  }),
+  })
 );
 
 // Initialize database connection
@@ -82,11 +122,12 @@ await updateComplianceService.initialize();
 // Start server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  const scheme = process.env.BACKEND_HTTPS === "1" ? "https" : "http";
+  console.log(`Server running on ${scheme}://localhost:${PORT}`);
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
   console.log("Authentication system enabled with GDPR Article 32 compliance");
   console.log(
-    "Data retention service active - GDPR Articles 5 & 17 compliance",
+    "Data retention service active - GDPR Articles 5 & 17 compliance"
   );
   console.log("Compliance update service active - GDPR Article 24 compliance");
 });
@@ -110,7 +151,7 @@ const gracefulShutdown = async (signal) => {
   // Force close after timeout
   setTimeout(() => {
     console.error(
-      "Could not close connections in time, forcefully shutting down",
+      "Could not close connections in time, forcefully shutting down"
     );
     process.exit(1);
   }, 10000);

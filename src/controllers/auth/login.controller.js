@@ -1,5 +1,6 @@
 import { validationResult } from "express-validator";
 import authService from "../../services/auth.service.js";
+import { regenerateSession, destroySession } from "./session.controller.js";
 import { getStorageType } from "../../config/database.js";
 
 /**
@@ -42,31 +43,36 @@ export const login = async (req, res) => {
       identifier,
       password,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
-    // Set secure HTTP-only cookie for refresh token
-    res.cookie("refreshToken", result.tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    // Regenerate session ID for security after successful login
+    regenerateSession(req, res, () => {
+      // Set secure HTTP-only cookie for refresh token
+      res.cookie("refreshToken", result.tokens.refreshToken, {
+        httpOnly: true,
+        secure:
+          process.env.NODE_ENV === "production" ||
+          process.env.BACKEND_HTTPS === "1",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: {
-        user: result.user,
-        accessToken: result.tokens.accessToken,
-        expiresIn: result.tokens.expiresIn,
-        tokenType: result.tokens.tokenType,
-      },
-      metadata: {
-        loginTime: new Date().toISOString(),
-        storageType: getStorageType(),
-        securityCompliance: "GDPR Article 32",
-      },
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: {
+          user: result.user,
+          accessToken: result.tokens.accessToken,
+          expiresIn: result.tokens.expiresIn,
+          tokenType: result.tokens.tokenType,
+        },
+        metadata: {
+          loginTime: new Date().toISOString(),
+          storageType: getStorageType(),
+          securityCompliance: "GDPR Article 32",
+        },
+      });
     });
   } catch (error) {
     console.error("Login error:", error.message);
@@ -109,13 +115,15 @@ export const refreshToken = async (req, res) => {
     const result = await authService.refreshToken(
       refreshToken,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // Set new refresh token cookie
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure:
+        process.env.NODE_ENV === "production" ||
+        process.env.BACKEND_HTTPS === "1",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -160,17 +168,20 @@ export const logout = async (req, res) => {
 
     await authService.logout(refreshToken, ipAddress, userAgent);
 
-    // Clear refresh token cookie
-    res.clearCookie("refreshToken");
+    // Destroy session for complete cleanup
+    destroySession(req, res, () => {
+      // Clear refresh token cookie
+      res.clearCookie("refreshToken");
 
-    res.status(200).json({
-      success: true,
-      message: "Logout successful",
-      data: null,
-      metadata: {
-        logoutTime: new Date().toISOString(),
-        storageType: getStorageType(),
-      },
+      res.status(200).json({
+        success: true,
+        message: "Logout successful",
+        data: null,
+        metadata: {
+          logoutTime: new Date().toISOString(),
+          storageType: getStorageType(),
+        },
+      });
     });
   } catch (error) {
     console.error("Logout error:", error.message);
@@ -178,10 +189,13 @@ export const logout = async (req, res) => {
     // Clear cookie even on error
     res.clearCookie("refreshToken");
 
-    res.status(200).json({
-      success: true,
-      message: "Logout completed",
-      data: null,
+    // Destroy session even on error
+    destroySession(req, res, () => {
+      res.status(200).json({
+        success: true,
+        message: "Logout completed",
+        data: null,
+      });
     });
   }
 };
