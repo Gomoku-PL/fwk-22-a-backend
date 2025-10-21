@@ -8,7 +8,7 @@ import updateComplianceService from "../services/updateCompliance.service.js";
 // Helper function for success responses
 const createSuccessResponse = (
   data,
-  message = "Operation completed successfully"
+  message = "Operation completed successfully",
 ) => ({
   success: true,
   message,
@@ -99,9 +99,8 @@ export const generateAuditReport = async (req, res) => {
 
     // Get current check results for audit
     const checkResults = await updateComplianceService.checkForUpdates();
-    const auditData = await updateComplianceService.generateQuarterlyAuditLog(
-      checkResults
-    );
+    const auditData =
+      await updateComplianceService.generateQuarterlyAuditLog(checkResults);
 
     res.json(createSuccessResponse(auditData, "Audit report generated"));
   } catch (error) {
@@ -140,8 +139,8 @@ export const updateConfiguration = async (req, res) => {
     res.json(
       createSuccessResponse(
         updateComplianceService.config,
-        "Configuration updated"
-      )
+        "Configuration updated",
+      ),
     );
   } catch (error) {
     const errorResponse = createErrorResponse(error, 400);

@@ -5,7 +5,9 @@ import { Parser as Json2csvParser } from "json2csv";
 // Helper: get all personal info for a user
 function getPersonalData(userId) {
   // For demo: games where user is a player
-  const games = memorydb.findAll("games").filter(g => g.players.includes(userId));
+  const games = memorydb
+    .findAll("games")
+    .filter((g) => g.players.includes(userId));
   // You can add more collections here (e.g., user profile, settings)
   return { userId, games };
 }
@@ -18,7 +20,7 @@ export function exportUserData(req, res) {
 
   if (format === "csv") {
     // Flatten games for CSV
-    const games = data.games.map(g => ({
+    const games = data.games.map((g) => ({
       id: g.id,
       players: g.players.join(";"),
       status: g.status,

@@ -39,7 +39,7 @@ const validateRetentionConfig = (config, path = "") => {
     } else if (typeof value === "number") {
       if (value < RETENTION_LIMITS.min || value > RETENTION_LIMITS.max) {
         throw new Error(
-          `${path}${key} must be between ${RETENTION_LIMITS.min} and ${RETENTION_LIMITS.max} days`
+          `${path}${key} must be between ${RETENTION_LIMITS.min} and ${RETENTION_LIMITS.max} days`,
         );
       }
     }
@@ -88,7 +88,7 @@ export const getRetentionStatus = async (req, res) => {
     const status = await dataRetentionService.getRetentionStatus();
     const response = createSuccessResponse(
       status,
-      "Data retention status retrieved successfully"
+      "Data retention status retrieved successfully",
     );
     response.metadata.gdprCompliance = "Articles 5 & 17";
 
@@ -98,7 +98,7 @@ export const getRetentionStatus = async (req, res) => {
     res
       .status(500)
       .json(
-        createErrorResponse("Error retrieving data retention status", error)
+        createErrorResponse("Error retrieving data retention status", error),
       );
   }
 };
@@ -108,7 +108,7 @@ export const triggerManualCleanup = async (req, res) => {
   try {
     const { targetTypes = ["all"] } = req.body;
     const invalidTypes = targetTypes.filter(
-      (type) => !VALID_TARGET_TYPES.includes(type)
+      (type) => !VALID_TARGET_TYPES.includes(type),
     );
 
     if (invalidTypes.length > 0) {
@@ -120,9 +120,8 @@ export const triggerManualCleanup = async (req, res) => {
     }
 
     console.log(`Manual cleanup triggered for: ${targetTypes.join(", ")}`);
-    const results = await dataRetentionService.performManualCleanup(
-      targetTypes
-    );
+    const results =
+      await dataRetentionService.performManualCleanup(targetTypes);
 
     const response = createSuccessResponse(
       {
@@ -130,7 +129,7 @@ export const triggerManualCleanup = async (req, res) => {
         triggeredAt: new Date().toISOString(),
         targetTypes,
       },
-      "Manual data cleanup completed successfully"
+      "Manual data cleanup completed successfully",
     );
 
     response.metadata.gdprCompliance =
@@ -160,7 +159,7 @@ export const updateRetentionConfig = async (req, res) => {
 
     validateRetentionConfig(req.body);
     const updatedConfig = await dataRetentionService.updateRetentionConfig(
-      req.body
+      req.body,
     );
 
     const response = createSuccessResponse(
@@ -168,7 +167,7 @@ export const updateRetentionConfig = async (req, res) => {
         configuration: updatedConfig,
         updatedAt: new Date().toISOString(),
       },
-      "Data retention configuration updated successfully"
+      "Data retention configuration updated successfully",
     );
 
     response.metadata.gdprCompliance =
@@ -181,8 +180,8 @@ export const updateRetentionConfig = async (req, res) => {
       .json(
         createErrorResponse(
           "Error updating data retention configuration",
-          error
-        )
+          error,
+        ),
       );
   }
 };
@@ -196,12 +195,12 @@ export const generateRetentionReport = async (req, res) => {
       status,
       startDate,
       endDate,
-      includeDetails
+      includeDetails,
     );
 
     const response = createSuccessResponse(
       report,
-      "Data retention compliance report generated successfully"
+      "Data retention compliance report generated successfully",
     );
     response.metadata.reportType = "gdpr_compliance_report";
 
@@ -211,7 +210,7 @@ export const generateRetentionReport = async (req, res) => {
     res
       .status(500)
       .json(
-        createErrorResponse("Error generating data retention report", error)
+        createErrorResponse("Error generating data retention report", error),
       );
   }
 };
@@ -249,8 +248,8 @@ export const getRetentionLogs = async (req, res) => {
             hasMore: offsetNum + limitNum < logs.length,
           },
         },
-        "Data retention logs retrieved successfully"
-      )
+        "Data retention logs retrieved successfully",
+      ),
     );
   } catch (error) {
     console.error("Error getting retention logs:", error);
@@ -268,8 +267,8 @@ export const testRetentionFunctionality = async (req, res) => {
         .status(403)
         .json(
           createErrorResponse(
-            "Test endpoints not available in production environment"
-          )
+            "Test endpoints not available in production environment",
+          ),
         );
     }
 
@@ -304,7 +303,7 @@ export const testRetentionFunctionality = async (req, res) => {
 
     const response = createSuccessResponse(
       testResults,
-      `Data retention test (${testType}) completed successfully`
+      `Data retention test (${testType}) completed successfully`,
     );
     response.metadata.environment = process.env.NODE_ENV;
 

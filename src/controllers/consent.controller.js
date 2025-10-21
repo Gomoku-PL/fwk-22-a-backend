@@ -1,7 +1,7 @@
-import { validationResult } from 'express-validator';
-import consentService from '../services/consent.service.js';
-import consentLogsService from '../services/consentLogs.service.js';
-import { getStorageType } from '../config/database.js';
+import { validationResult } from "express-validator";
+import consentService from "../services/consent.service.js";
+import consentLogsService from "../services/consentLogs.service.js";
+import { getStorageType } from "../config/database.js";
 
 /**
  * GDPR Article 7 - Consent Controller
@@ -13,21 +13,21 @@ import { getStorageType } from '../config/database.js';
  */
 export const getConsent = async (req, res) => {
   try {
-    const userId = req.headers['user-id'] || req.sessionID || 'demo-user';
+    const userId = req.headers["user-id"] || req.sessionID || "demo-user";
     const consent = await consentService.getConsent(userId);
-    
+
     // Log the consent view event
     await consentLogsService.logConsentEvent({
       userId,
-      eventType: 'consent_viewed',
+      eventType: "consent_viewed",
       purposes: consent?.purposes || {},
-      consentMethod: 'api_call',
-      ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
-      userAgent: req.get('User-Agent') || 'Unknown',
+      consentMethod: "api_call",
+      ipAddress: req.ip || req.connection.remoteAddress || "127.0.0.1",
+      userAgent: req.get("User-Agent") || "Unknown",
       sessionId: req.sessionID || null,
-      processingPurpose: 'User viewing consent settings'
+      processingPurpose: "User viewing consent settings",
     });
-    
+
     if (!consent) {
       return res.status(200).json({
         success: true,
@@ -37,28 +37,28 @@ export const getConsent = async (req, res) => {
             marketing: false,
             analytics: false,
             personalization: false,
-            thirdParty: false
+            thirdParty: false,
           },
           consentDate: null,
           withdrawalDate: null,
-          storageType: getStorageType()
-        }
+          storageType: getStorageType(),
+        },
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: {
         ...consent,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving consent settings',
+      message: "Error retrieving consent settings",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -72,58 +72,60 @@ export const updateConsent = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation errors',
-        errors: errors.array()
+        message: "Validation errors",
+        errors: errors.array(),
       });
     }
 
-    const userId = req.headers['user-id'] || req.sessionID || 'demo-user';
+    const userId = req.headers["user-id"] || req.sessionID || "demo-user";
     const { purposes } = req.body;
-    
+
     // Get previous consent for logging
     const previousConsent = await consentService.getConsent(userId);
-    
-    const hasAnyConsent = Object.values(purposes).some(consent => consent === true);
-    
+
+    const hasAnyConsent = Object.values(purposes).some(
+      (consent) => consent === true,
+    );
+
     const consentData = {
       purposes,
       consentDate: hasAnyConsent ? new Date() : null,
       withdrawalDate: !hasAnyConsent ? new Date() : null,
-      ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
-      userAgent: req.get('User-Agent') || 'Unknown'
+      ipAddress: req.ip || req.connection.remoteAddress || "127.0.0.1",
+      userAgent: req.get("User-Agent") || "Unknown",
     };
 
     const consent = await consentService.setConsent(userId, consentData);
 
     // Log the consent event
-    const eventType = hasAnyConsent ? 'consent_given' : 'consent_withdrawn';
+    const eventType = hasAnyConsent ? "consent_given" : "consent_withdrawn";
     await consentLogsService.logConsentEvent({
       userId,
       eventType,
       purposes,
       previousPurposes: previousConsent?.purposes || {},
-      consentMethod: 'api_call',
+      consentMethod: "api_call",
       ipAddress: consentData.ipAddress,
       userAgent: consentData.userAgent,
       sessionId: req.sessionID || null,
-      processingPurpose: `User ${hasAnyConsent ? 'granted' : 'withdrew'} consent via API`
+      processingPurpose: `User ${hasAnyConsent ? "granted" : "withdrew"} consent via API`,
     });
 
     res.status(200).json({
       success: true,
-      message: 'Consent updated successfully',
+      message: "Consent updated successfully",
       data: {
         ...consent,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
-    console.error('Error updating consent:', error);
+    console.error("Error updating consent:", error);
     res.status(500).json({
       success: false,
-      message: 'Error updating consent',
+      message: "Error updating consent",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -133,22 +135,22 @@ export const updateConsent = async (req, res) => {
  */
 export const withdrawAllConsent = async (req, res) => {
   try {
-    const userId = req.headers['user-id'] || req.sessionID || 'demo-user';
-    
+    const userId = req.headers["user-id"] || req.sessionID || "demo-user";
+
     // Get previous consent for logging
     const previousConsent = await consentService.getConsent(userId);
-    
+
     const withdrawnConsent = {
       purposes: {
         marketing: false,
         analytics: false,
         personalization: false,
-        thirdParty: false
+        thirdParty: false,
       },
       withdrawalDate: new Date(),
       consentDate: null,
-      ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
-      userAgent: req.get('User-Agent') || 'Unknown'
+      ipAddress: req.ip || req.connection.remoteAddress || "127.0.0.1",
+      userAgent: req.get("User-Agent") || "Unknown",
     };
 
     const consent = await consentService.setConsent(userId, withdrawnConsent);
@@ -156,31 +158,31 @@ export const withdrawAllConsent = async (req, res) => {
     // Log the withdrawal event
     await consentLogsService.logConsentEvent({
       userId,
-      eventType: 'consent_withdrawn',
+      eventType: "consent_withdrawn",
       purposes: withdrawnConsent.purposes,
       previousPurposes: previousConsent?.purposes || {},
-      consentMethod: 'api_call',
+      consentMethod: "api_call",
       ipAddress: withdrawnConsent.ipAddress,
       userAgent: withdrawnConsent.userAgent,
       sessionId: req.sessionID || null,
-      processingPurpose: 'User withdrew all consent via API'
+      processingPurpose: "User withdrew all consent via API",
     });
 
     res.status(200).json({
       success: true,
-      message: 'All consent withdrawn successfully',
+      message: "All consent withdrawn successfully",
       data: {
         ...consent,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
-    console.error('Error withdrawing consent:', error);
+    console.error("Error withdrawing consent:", error);
     res.status(500).json({
       success: false,
-      message: 'Error withdrawing consent',
+      message: "Error withdrawing consent",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -190,20 +192,20 @@ export const withdrawAllConsent = async (req, res) => {
  */
 export const getConsentHistory = async (req, res) => {
   try {
-    const userId = req.headers['user-id'] || req.sessionID || 'demo-user';
+    const userId = req.headers["user-id"] || req.sessionID || "demo-user";
     const history = await consentService.getConsentHistory(userId);
-    
+
     res.status(200).json({
       success: true,
       data: history,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving consent history',
+      message: "Error retrieving consent history",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -214,34 +216,39 @@ export const getConsentHistory = async (req, res) => {
 export const checkConsentForPurpose = async (req, res) => {
   try {
     const { purpose } = req.params;
-    const userId = req.headers['user-id'] || req.sessionID || 'demo-user';
-    
-    const validPurposes = ['marketing', 'analytics', 'personalization', 'thirdParty'];
+    const userId = req.headers["user-id"] || req.sessionID || "demo-user";
+
+    const validPurposes = [
+      "marketing",
+      "analytics",
+      "personalization",
+      "thirdParty",
+    ];
     if (!validPurposes.includes(purpose)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid purpose specified',
-        validPurposes
+        message: "Invalid purpose specified",
+        validPurposes,
       });
     }
-    
+
     const hasConsent = await consentService.hasConsent(userId, purpose);
-    
+
     res.status(200).json({
       success: true,
       data: {
         purpose,
         hasConsent,
         userId,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error checking consent',
+      message: "Error checking consent",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -254,14 +261,14 @@ export const getConsentStats = async (req, res) => {
     const stats = await consentService.getStats();
     res.status(200).json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving consent statistics',
+      message: "Error retrieving consent statistics",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -274,15 +281,15 @@ export const clearConsentData = async (req, res) => {
     const result = await consentService.clear();
     res.status(200).json({
       success: true,
-      message: 'Consent data cleared successfully',
-      data: result
+      message: "Consent data cleared successfully",
+      data: result,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error clearing consent data',
+      message: "Error clearing consent data",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };

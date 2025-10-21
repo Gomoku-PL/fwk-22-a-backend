@@ -4,11 +4,16 @@
     "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
+    "fast-glob": "^3.3.3",
     "jsonwebtoken": "^9.0.2",
+    "mime-db": "^1.54.0",
     "mongoose": "^8.19.1",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
+    "prettier": "^3.6.2",
     "socket.io": "^4.8.1",
+    "strip-comments": "^2.0.1",
+    "strip-css-comments": "^5.0.0",
     "xss": "^1.0.15"
   },
   "type": "module",
@@ -26,7 +31,9 @@
     "dev": "nodemon src/server.js",
     "dev:memory": "cross-env STORAGE_TYPE=memory nodemon src/server.js",
     "dev:mongodb": "cross-env STORAGE_TYPE=mongodb nodemon src/server.js",
-    "start:mongo": "mongod --dbpath ./data/db"
+    "start:mongo": "mongod --dbpath ./data/db",
+    "strip:comments": "node ./scripts/removeComments.mjs",
+    "format:repo": "node ./scripts/formatRepo.mjs"
   },
   "repository": {
     "type": "git",

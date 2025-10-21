@@ -9,7 +9,9 @@ export const deleteUserData = async (req, res) => {
       req.auth?.id;
 
     if (!userId) {
-      return res.status(400).json({ message: "Invalid request: not authenticated" });
+      return res
+        .status(400)
+        .json({ message: "Invalid request: not authenticated" });
     }
 
     const deletedUser = await User.findByIdAndDelete(userId);

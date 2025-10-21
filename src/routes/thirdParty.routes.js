@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { 
-  listThirdParties, 
+import {
+  listThirdParties,
   getProcessorDetails,
   getProcessorsByPurpose,
   getComplianceReport,
-  evaluateDataTransfer
+  evaluateDataTransfer,
 } from "../controllers/thirdParty.controller.js";
 
 const router = Router();

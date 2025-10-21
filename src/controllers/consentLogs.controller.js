@@ -1,6 +1,6 @@
-import { validationResult } from 'express-validator';
-import consentLogsService from '../services/consentLogs.service.js';
-import { getStorageType } from '../config/database.js';
+import { validationResult } from "express-validator";
+import consentLogsService from "../services/consentLogs.service.js";
+import { getStorageType } from "../config/database.js";
 
 /**
  * Consent Logs Controller - GDPR Article 30 Compliance
@@ -13,8 +13,15 @@ import { getStorageType } from '../config/database.js';
  */
 export const getAuditTrail = async (req, res) => {
   try {
-    const { userId, eventType, startDate, endDate, limit = 100, page = 1 } = req.query;
-    
+    const {
+      userId,
+      eventType,
+      startDate,
+      endDate,
+      limit = 100,
+      page = 1,
+    } = req.query;
+
     const filters = {};
     if (userId) filters.userId = userId;
     if (eventType) filters.eventType = eventType;
@@ -22,7 +29,7 @@ export const getAuditTrail = async (req, res) => {
     if (endDate) filters.endDate = endDate;
 
     const auditTrail = await consentLogsService.getAuditTrail(filters);
-    
+
     // Pagination for large datasets
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + parseInt(limit);
@@ -36,18 +43,18 @@ export const getAuditTrail = async (req, res) => {
           currentPage: parseInt(page),
           totalLogs: auditTrail.length,
           logsPerPage: parseInt(limit),
-          totalPages: Math.ceil(auditTrail.length / limit)
+          totalPages: Math.ceil(auditTrail.length / limit),
         },
         filters,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving audit trail',
+      message: "Error retrieving audit trail",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -58,11 +65,11 @@ export const getAuditTrail = async (req, res) => {
 export const getUserAuditTrail = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     if (!userId) {
       return res.status(400).json({
         success: false,
-        message: 'User ID is required'
+        message: "User ID is required",
       });
     }
 
@@ -74,15 +81,15 @@ export const getUserAuditTrail = async (req, res) => {
         userId,
         logs: userAuditTrail,
         totalEntries: userAuditTrail.length,
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving user audit trail',
+      message: "Error retrieving user audit trail",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -96,8 +103,8 @@ export const getComplianceReport = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation errors',
-        errors: errors.array()
+        message: "Validation errors",
+        errors: errors.array(),
       });
     }
 
@@ -106,30 +113,33 @@ export const getComplianceReport = async (req, res) => {
     if (!startDate || !endDate) {
       return res.status(400).json({
         success: false,
-        message: 'Start date and end date are required for compliance reports'
+        message: "Start date and end date are required for compliance reports",
       });
     }
 
-    const report = await consentLogsService.getComplianceReport(startDate, endDate);
+    const report = await consentLogsService.getComplianceReport(
+      startDate,
+      endDate,
+    );
 
     res.status(200).json({
       success: true,
       data: {
         reportPeriod: {
           startDate,
-          endDate
+          endDate,
         },
         compliance: report,
         generatedAt: new Date().toISOString(),
-        storageType: getStorageType()
-      }
+        storageType: getStorageType(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error generating compliance report',
+      message: "Error generating compliance report",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -145,15 +155,15 @@ export const getAuditStats = async (req, res) => {
       success: true,
       data: {
         ...stats,
-        lastUpdated: new Date().toISOString()
-      }
+        lastUpdated: new Date().toISOString(),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving audit statistics',
+      message: "Error retrieving audit statistics",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };
@@ -167,31 +177,31 @@ export const createAuditLog = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation errors',
-        errors: errors.array()
+        message: "Validation errors",
+        errors: errors.array(),
       });
     }
 
     const logData = {
       ...req.body,
       ipAddress: req.ip || req.connection.remoteAddress,
-      userAgent: req.get('User-Agent') || 'Admin Console',
-      sessionId: req.sessionID || 'admin-session'
+      userAgent: req.get("User-Agent") || "Admin Console",
+      sessionId: req.sessionID || "admin-session",
     };
 
     const logEntry = await consentLogsService.logConsentEvent(logData);
 
     res.status(201).json({
       success: true,
-      message: 'Audit log created successfully',
-      data: logEntry
+      message: "Audit log created successfully",
+      data: logEntry,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error creating audit log',
+      message: "Error creating audit log",
       error: error.message,
-      storageType: getStorageType()
+      storageType: getStorageType(),
     });
   }
 };

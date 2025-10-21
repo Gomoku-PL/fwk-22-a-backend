@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 
 /**
  * In-memory user database for authentication
@@ -9,7 +9,7 @@ class UserDatabase {
     this.users = new Map(); // email -> user object
     this.usersByUsername = new Map(); // username -> user object
     this.securityEvents = []; // Global security audit log
-    
+
     // Create default demo user
     this.initializeDefaultUsers();
   }
@@ -17,15 +17,15 @@ class UserDatabase {
   async initializeDefaultUsers() {
     const demoUsers = [
       {
-        email: 'demo@example.com',
-        username: 'demo',
-        password: 'Demo123!@#'
+        email: "demo@example.com",
+        username: "demo",
+        password: "Demo123!@#",
       },
       {
-        email: 'admin@example.com',
-        username: 'admin',
-        password: 'Admin123!@#'
-      }
+        email: "admin@example.com",
+        username: "admin",
+        password: "Admin123!@#",
+      },
     ];
 
     for (const userData of demoUsers) {
@@ -35,13 +35,16 @@ class UserDatabase {
 
   async createUser(userData) {
     const { email, username, password } = userData;
-    
-    if (this.users.has(email.toLowerCase()) || this.usersByUsername.has(username.toLowerCase())) {
-      throw new Error('User already exists');
+
+    if (
+      this.users.has(email.toLowerCase()) ||
+      this.usersByUsername.has(username.toLowerCase())
+    ) {
+      throw new Error("User already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    
+
     const user = {
       id: this.generateId(),
       email: email.toLowerCase(),
@@ -56,12 +59,12 @@ class UserDatabase {
       refreshTokens: [],
       securityEvents: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.users.set(email.toLowerCase(), user);
     this.usersByUsername.set(username.toLowerCase(), user);
-    
+
     return this.sanitizeUser(user);
   }
 
@@ -74,7 +77,9 @@ class UserDatabase {
   }
 
   async findUserByEmailOrUsername(identifier) {
-    const user = await this.findUserByEmail(identifier) || await this.findUserByUsername(identifier);
+    const user =
+      (await this.findUserByEmail(identifier)) ||
+      (await this.findUserByUsername(identifier));
     return user;
   }
 
@@ -95,8 +100,11 @@ class UserDatabase {
       user.failedLoginAttempts = 1;
     } else {
       user.failedLoginAttempts += 1;
-      
-      if (user.failedLoginAttempts >= maxAttempts && !this.isAccountLocked(user)) {
+
+      if (
+        user.failedLoginAttempts >= maxAttempts &&
+        !this.isAccountLocked(user)
+      ) {
         user.accountLockUntil = Date.now() + lockTime;
       }
     }
@@ -119,19 +127,19 @@ class UserDatabase {
     return user;
   }
 
-  addSecurityEvent(user, eventType, ipAddress, userAgent, details = '') {
+  addSecurityEvent(user, eventType, ipAddress, userAgent, details = "") {
     const event = {
       eventType,
       timestamp: new Date(),
       ipAddress,
       userAgent,
       details,
-      userId: user.id
+      userId: user.id,
     };
 
     // Add to user's security events
     user.securityEvents.push(event);
-    
+
     // Keep only last 50 events per user
     if (user.securityEvents.length > 50) {
       user.securityEvents = user.securityEvents.slice(-50);
@@ -139,7 +147,7 @@ class UserDatabase {
 
     // Add to global security log
     this.securityEvents.push(event);
-    
+
     // Keep only last 1000 global events
     if (this.securityEvents.length > 1000) {
       this.securityEvents = this.securityEvents.slice(-1000);
@@ -151,31 +159,31 @@ class UserDatabase {
   addRefreshToken(user, token) {
     user.refreshTokens.push({
       token,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // Clean old tokens (older than 7 days)
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    user.refreshTokens = user.refreshTokens.filter(t => t.createdAt.getTime() > sevenDaysAgo);
-    
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    user.refreshTokens = user.refreshTokens.filter(
+      (t) => t.createdAt.getTime() > sevenDaysAgo,
+    );
+
     user.updatedAt = new Date();
   }
 
   removeRefreshToken(user, token) {
-    user.refreshTokens = user.refreshTokens.filter(t => t.token !== token);
+    user.refreshTokens = user.refreshTokens.filter((t) => t.token !== token);
     user.updatedAt = new Date();
   }
 
   getSecurityEvents(userId = null, limit = 100) {
     let events = this.securityEvents;
-    
+
     if (userId) {
-      events = events.filter(event => event.userId === userId);
+      events = events.filter((event) => event.userId === userId);
     }
-    
-    return events
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit);
+
+    return events.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
   }
 
   sanitizeUser(user) {
@@ -192,10 +200,13 @@ class UserDatabase {
   getStats() {
     return {
       totalUsers: this.users.size,
-      activeUsers: Array.from(this.users.values()).filter(u => u.isActive).length,
-      lockedUsers: Array.from(this.users.values()).filter(u => this.isAccountLocked(u)).length,
+      activeUsers: Array.from(this.users.values()).filter((u) => u.isActive)
+        .length,
+      lockedUsers: Array.from(this.users.values()).filter((u) =>
+        this.isAccountLocked(u),
+      ).length,
       totalSecurityEvents: this.securityEvents.length,
-      storageType: 'memory'
+      storageType: "memory",
     };
   }
 
@@ -204,7 +215,7 @@ class UserDatabase {
     this.usersByUsername.clear();
     this.securityEvents = [];
     this.initializeDefaultUsers();
-    return { message: 'User database cleared and reinitialized' };
+    return { message: "User database cleared and reinitialized" };
   }
 }
 

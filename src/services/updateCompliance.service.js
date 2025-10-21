@@ -37,7 +37,7 @@ class ComplianceUpdateService {
 
       this.isInitialized = true;
       console.log(
-        `Compliance update service initialized (v${this.currentVersion})`
+        `Compliance update service initialized (v${this.currentVersion})`,
       );
 
       await this.logComplianceEvent("service_initialized", {
@@ -62,7 +62,7 @@ class ComplianceUpdateService {
       {
         scheduled: false,
         timezone: "Europe/Warsaw",
-      }
+      },
     );
 
     this.updateScheduler.start();
@@ -87,7 +87,7 @@ class ComplianceUpdateService {
 
       if (checkResults.updatesAvailable.length > 0) {
         console.log(
-          `Found ${checkResults.updatesAvailable.length} compliance updates`
+          `Found ${checkResults.updatesAvailable.length} compliance updates`,
         );
 
         if (this.config.autoUpdate) {
@@ -192,7 +192,7 @@ class ComplianceUpdateService {
     if (results.applied.length > 0) {
       const latestVersion = results.applied.reduce(
         (latest, update) => (update.version > latest ? update.version : latest),
-        this.currentVersion
+        this.currentVersion,
       );
 
       await this.updateComplianceVersion(latestVersion);
@@ -205,7 +205,7 @@ class ComplianceUpdateService {
   // Apply individual update
   async applyUpdate(update) {
     console.log(
-      `Applying compliance update: ${update.title} (${update.version})`
+      `Applying compliance update: ${update.title} (${update.version})`,
     );
 
     // In production, this would apply actual code/policy changes
@@ -237,7 +237,7 @@ class ComplianceUpdateService {
     // Update technical configurations or trigger code updates
     await this.updateTechnicalConfiguration(
       update.affectedAreas,
-      update.version
+      update.version,
     );
     return true;
   }
@@ -258,7 +258,7 @@ class ComplianceUpdateService {
   // Update technical configuration
   async updateTechnicalConfiguration(areas, version) {
     console.log(
-      `Updating technical configuration for areas: ${areas.join(", ")}`
+      `Updating technical configuration for areas: ${areas.join(", ")}`,
     );
     // Implementation would update technical settings
   }
@@ -325,7 +325,7 @@ class ComplianceUpdateService {
   getDaysSinceLastCheck() {
     if (!this.lastUpdateCheck) return 365; // Force initial check
     return Math.floor(
-      (Date.now() - this.lastUpdateCheck.getTime()) / (24 * 60 * 60 * 1000)
+      (Date.now() - this.lastUpdateCheck.getTime()) / (24 * 60 * 60 * 1000),
     );
   }
 
@@ -343,7 +343,7 @@ class ComplianceUpdateService {
   getRecentUpdates(days) {
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     return this.complianceHistory.filter(
-      (update) => new Date(update.appliedAt) > cutoff
+      (update) => new Date(update.appliedAt) > cutoff,
     );
   }
 

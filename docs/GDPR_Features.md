@@ -1,10 +1,9 @@
-
-
 This document outlines all GDPR-related backend features and API endpoints. It ensures compliance with "GDPR Articles 13 & 14" and provides guidance for users and auditors.
 
 ---
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [User Data Access](#user-data-access)
 3. [User Data Deletion](#user-data-deletion)
@@ -18,20 +17,20 @@ This document outlines all GDPR-related backend features and API endpoints. It e
 ---
 
 ## Overview
+
 - All personal data is processed according to GDPR principles: lawfulness, fairness, transparency, purpose limitation, data minimization, accuracy, storage limitation, integrity, and confidentiality.
 - This documentation provides endpoints for users to exercise their GDPR rights, including access to personal data, deletion,(Right to be Forgotten) Rectification (Correction of Data) consent management and export of data.
 
 ---
+
 **Lawful Basis for Processing:**  
 User data is processed under **user consent** and **legitimate interest** (to provide and secure the service).
 
 **Data Protection Contact:**  
 For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-grup.com
 
-
-
-
 ## User Data Access
+
 **Endpoint:** GET /user/data
 **Controller:** dataAccess.controller.js
 **Route:** dataAccess.route.js
@@ -40,9 +39,10 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| userId    | string | yes      | Unique identifier of the user |
+| userId | string | yes | Unique identifier of the user |
 
 **Response Example:**
+
 ```json
 {
   "userId": "12345",
@@ -54,6 +54,7 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 ```
 
 ## User Data Deletion
+
 **Endpoint:** DELETE /user/delete
 **Controller:** dataDeletion.controller.js
 **Route:** dataAccess.route.js
@@ -62,9 +63,10 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| userId    | string | yes      | Unique identifier of the user |
+| userId | string | yes | Unique identifier of the user |
 
 **Response Example:**
+
 ```json
 {
   "status": "success",
@@ -82,11 +84,12 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| userId    | string | yes      | Unique identifier of the user      |
-| field     | string | yes      | The data field to update ("email") |
-| value     | string | yes      | The new value for the field        |
+| userId | string | yes | Unique identifier of the user |
+| field | string | yes | The data field to update ("email") |
+| value | string | yes | The new value for the field |
 
 **Response Example:**
+
 ```json
 {
   "status": "success",
@@ -94,8 +97,8 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 }
 ```
 
-
 ## User Data Export / Portability
+
 **Endpoint:** GET /user/export  
 **Controller:** dataPortability.controller.js  
 **Route:** dataProtability.route.js  
@@ -103,14 +106,13 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 
 **Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| Parameter | Type   | Required | Description                   |
+| --------- | ------ | -------- | ----------------------------- |
 | userId    | string | yes      | Unique identifier of the user |
 
 **Response Example:**
 
 ```json
-
 {
   "userId": "12345",
   "name": "gomoku grup",
@@ -119,20 +121,20 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
   "consentStatus": true,
   "gamesPlayed": 42
 }
-``` 
+```
+
 ## Consent Management
+
 **Endpoint:** POST /user/consent
 **Controller:** consent.controller.js
 **Route:** consent.routes.js
 **Description:** Records user consent for data processing.
 
 **Parameters:**
-| Parameter | Type    | Required | Description                      |
-|-----------|---------|----------|-------------------------------   |
-| userId    | string  | yes      | Unique identifier of the user    |
-| consent   | boolean | yes      | User consent status (true/false) |
-
-
+| Parameter | Type | Required | Description |
+|-----------|---------|----------|------------------------------- |
+| userId | string | yes | Unique identifier of the user |
+| consent | boolean | yes | User consent status (true/false) |
 
 **Response Example:**
 
@@ -143,10 +145,11 @@ For GDPR inquiries, contact our Data Protection Officer (DPO): privacy@gomoku-gr
 }
 ```
 
- ## Data Retention Policies
- **Endpoint:** GET /data/retention
- **Controller:** dataRetention.controller.js
- **Route:** dataRetention.routes.js
+## Data Retention Policies
+
+**Endpoint:** GET /data/retention
+**Controller:** dataRetention.controller.js
+**Route:** dataRetention.routes.js
 **Description:** Provides information about how long personal data is stored.
 
 **Response Example:**
@@ -182,28 +185,17 @@ N/A (informational section only).
   "status": "error",
   "message": "User not found or invalid userId."
 }
-
 ```
-```json
+
+````json
 {
   "status": "error",
   "message": "Unauthorized access. Consent not granted."
 }```
 
-```json 
+```json
 {
   "status": "error",
   "message": "Internal server error. Please try again later."
 }
-```
-
-
-
-
-
-
-
-
-
-
-
+````

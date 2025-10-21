@@ -1,6 +1,6 @@
-import ConsentModel from '../models/consent.model.js';
-import consentDb from '../models/consentdb.js';
-import { isUsingMongoDB } from '../config/database.js';
+import ConsentModel from "../models/consent.model.js";
+import consentDb from "../models/consentdb.js";
+import { isUsingMongoDB } from "../config/database.js";
 
 /**
  * Unified Consent Service
@@ -18,7 +18,7 @@ class ConsentService {
         return consentDb.getConsent(userId);
       }
     } catch (error) {
-      console.error('Error getting consent:', error);
+      console.error("Error getting consent:", error);
       return null;
     }
   }
@@ -32,18 +32,18 @@ class ConsentService {
         const consent = await ConsentModel.findOneAndUpdate(
           { userId },
           { userId, ...consentData },
-          { 
-            upsert: true, 
+          {
+            upsert: true,
             new: true,
-            runValidators: true
-          }
+            runValidators: true,
+          },
         );
         return consent.toObject();
       } else {
         return consentDb.setConsent(userId, consentData);
       }
     } catch (error) {
-      console.error('Error setting consent:', error);
+      console.error("Error setting consent:", error);
       throw error;
     }
   }
@@ -56,12 +56,12 @@ class ConsentService {
       if (isUsingMongoDB()) {
         return await ConsentModel.find({ userId })
           .sort({ createdAt: -1 })
-          .select('-__v');
+          .select("-__v");
       } else {
         return consentDb.getConsentHistory(userId);
       }
     } catch (error) {
-      console.error('Error getting consent history:', error);
+      console.error("Error getting consent history:", error);
       return [];
     }
   }
@@ -72,13 +72,17 @@ class ConsentService {
   async hasConsent(userId, purpose) {
     try {
       if (isUsingMongoDB()) {
-        const consent = await ConsentModel.findOne({ userId }).sort({ createdAt: -1 });
-        return consent && consent.purposes && consent.purposes[purpose] === true;
+        const consent = await ConsentModel.findOne({ userId }).sort({
+          createdAt: -1,
+        });
+        return (
+          consent && consent.purposes && consent.purposes[purpose] === true
+        );
       } else {
         return consentDb.hasConsent(userId, purpose);
       }
     } catch (error) {
-      console.error('Error checking consent:', error);
+      console.error("Error checking consent:", error);
       return false; // Fail-safe: no consent if error
     }
   }
@@ -95,17 +99,17 @@ class ConsentService {
             marketing: false,
             analytics: false,
             personalization: false,
-            thirdParty: false
+            thirdParty: false,
           },
           withdrawalDate: new Date(),
-          consentDate: null
+          consentDate: null,
         };
         return await this.setConsent(userId, withdrawnConsent);
       } else {
         return consentDb.removeConsent(userId);
       }
     } catch (error) {
-      console.error('Error removing consent:', error);
+      console.error("Error removing consent:", error);
       throw error;
     }
   }
@@ -116,21 +120,22 @@ class ConsentService {
   async getStats() {
     try {
       if (isUsingMongoDB()) {
-        const totalUsers = await ConsentModel.distinct('userId').countDocuments();
+        const totalUsers =
+          await ConsentModel.distinct("userId").countDocuments();
         const totalRecords = await ConsentModel.countDocuments();
         return {
-          storageType: 'mongodb',
+          storageType: "mongodb",
           totalUsers,
-          totalRecords
+          totalRecords,
         };
       } else {
         return {
-          storageType: 'memory',
-          ...consentDb.getStats()
+          storageType: "memory",
+          ...consentDb.getStats(),
         };
       }
     } catch (error) {
-      console.error('Error getting stats:', error);
+      console.error("Error getting stats:", error);
       return { error: error.message };
     }
   }
@@ -142,13 +147,13 @@ class ConsentService {
     try {
       if (isUsingMongoDB()) {
         await ConsentModel.deleteMany({});
-        return { message: 'MongoDB consent data cleared' };
+        return { message: "MongoDB consent data cleared" };
       } else {
         consentDb.clear();
-        return { message: 'In-memory consent data cleared' };
+        return { message: "In-memory consent data cleared" };
       }
     } catch (error) {
-      console.error('Error clearing data:', error);
+      console.error("Error clearing data:", error);
       throw error;
     }
   }

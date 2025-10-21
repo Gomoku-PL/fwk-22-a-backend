@@ -32,19 +32,21 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
 app.use(cookieParser()); // For secure refresh token cookies
 
 // XSS Protection middleware
-app.use(xssProtection({
-  sanitizeBody: true,
-  sanitizeQuery: true,
-  sanitizeParams: true,
-  setHeaders: true
-}));
+app.use(
+  xssProtection({
+    sanitizeBody: true,
+    sanitizeQuery: true,
+    sanitizeParams: true,
+    setHeaders: true,
+  }),
+);
 
 // Initialize database connection
 await connectMongoDB();
@@ -84,7 +86,7 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
   console.log("Authentication system enabled with GDPR Article 32 compliance");
   console.log(
-    "Data retention service active - GDPR Articles 5 & 17 compliance"
+    "Data retention service active - GDPR Articles 5 & 17 compliance",
   );
   console.log("Compliance update service active - GDPR Article 24 compliance");
 });
@@ -108,7 +110,7 @@ const gracefulShutdown = async (signal) => {
   // Force close after timeout
   setTimeout(() => {
     console.error(
-      "Could not close connections in time, forcefully shutting down"
+      "Could not close connections in time, forcefully shutting down",
     );
     process.exit(1);
   }, 10000);
