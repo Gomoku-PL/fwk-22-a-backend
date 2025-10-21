@@ -7,6 +7,7 @@ import {
   getProfile,
   getSecurityEvents,
 } from "../controllers/auth/login.controller.js";
+import { validateSessionSecurity } from "../controllers/auth/session.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -23,6 +24,9 @@ const loginValidation = [
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long"),
 ];
+
+// Add session security validation to all routes
+router.use(validateSessionSecurity);
 
 /**
  * @route   POST /auth/login

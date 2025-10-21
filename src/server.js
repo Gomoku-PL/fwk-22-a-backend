@@ -4,6 +4,7 @@ import fs from "node:fs";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 import { Server } from "socket.io";
 import { xssProtection } from "./middleware/xss.middleware.js";
 
@@ -52,11 +53,30 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json());
 app.use(cookieParser()); // For secure refresh token cookies
+
+// Session configuration for security
+app.use(
+  session({
+    secret:
+      process.env.SESSION_SECRET || "fallback-dev-secret-change-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure:
+        process.env.NODE_ENV === "production" ||
+        process.env.BACKEND_HTTPS === "1",
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: "strict",
+    },
+    name: "sessionId", // Custom session cookie name
+  })
+);
 
 // XSS Protection middleware
 app.use(
@@ -65,7 +85,7 @@ app.use(
     sanitizeQuery: true,
     sanitizeParams: true,
     setHeaders: true,
-  }),
+  })
 );
 
 // Initialize database connection
@@ -107,7 +127,7 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log("CORS allowed origins:", allowedOrigins.join(", "));
   console.log("Authentication system enabled with GDPR Article 32 compliance");
   console.log(
-    "Data retention service active - GDPR Articles 5 & 17 compliance",
+    "Data retention service active - GDPR Articles 5 & 17 compliance"
   );
   console.log("Compliance update service active - GDPR Article 24 compliance");
 });
@@ -131,7 +151,7 @@ const gracefulShutdown = async (signal) => {
   // Force close after timeout
   setTimeout(() => {
     console.error(
-      "Could not close connections in time, forcefully shutting down",
+      "Could not close connections in time, forcefully shutting down"
     );
     process.exit(1);
   }, 10000);
