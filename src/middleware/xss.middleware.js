@@ -30,10 +30,10 @@ export const xssProtection = (options = {}) => {
     if (sanitizeBody && req.body) {
       req.body = sanitizeObject(req.body);
     }
-
     // Sanitize query parameters
     if (sanitizeQuery && req.query) {
-      req.query = sanitizeObject(req.query);
+      const sanitizedQuery = sanitizeObject(req.query);
+      Object.assign(req.query, sanitizedQuery); // skriver värden istället för att byta hela objektet
     }
 
     // Sanitize route parameters
