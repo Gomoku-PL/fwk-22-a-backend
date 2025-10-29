@@ -2,10 +2,11 @@ import express from "express";
 import cors from "cors";
 
 // Routes
-import gamesRoutes from "../routes/games.routes.js";
-import healthRoutes from "../routes/health.routes.js";
-import dataAccessRoutes from "../routes/dataAccess.routes.js";
-import dataPortabilityRoutes from "../routes/dataPortability.routes.js";
+import gamesRoutes from "./routes/games.routes.js";
+import healthRoutes from "./routes/health.routes.js";
+import dataAccessRoutes from "./routes/dataAccess.routes.js";
+import dataPortabilityRoutes from "./routes/dataPortability.routes.js";
+import dataDeletionRoutes from "./routes/dataDeletion.routes.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Mount routers
 app.use("/api/data-access", dataAccessRoutes); // Your new data access endpoint
 app.use("/api/data-portability", dataPortabilityRoutes); // Data portability endpoint
+app.use("/api/data", dataDeletionRoutes); // Data deletion endpoint
 app.use("/api/games", gamesRoutes); // Game endpoints
 app.use(healthRoutes); // Health check routes
 

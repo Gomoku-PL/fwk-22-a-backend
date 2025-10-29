@@ -9,6 +9,7 @@ import {
 } from "../controllers/auth/login.controller.js";
 import { validateSessionSecurity } from "../controllers/auth/session.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
+import { register } from "../controllers/auth/register.controller.js";
 
 const router = express.Router();
 
@@ -27,6 +28,27 @@ const loginValidation = [
 
 // Add session security validation to all routes
 router.use(validateSessionSecurity);
+
+// Registration validation (minimal data: email + password; optional username)
+const registerValidation = [
+  body("email").isEmail().withMessage("Valid email is required").normalizeEmail(),
+  body("password")
+    .isString()
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters"),
+  body("username")
+    .optional()
+    .isString()
+    .isLength({ min: 3, max: 30 })
+    .withMessage("Username must be 3-30 characters"),
+];
+
+/**
+ * @route   POST /auth/register
+ * @desc    Secure user registration (GDPR Articles 5, 6, 25)
+ * @access  Public
+ */
+router.post("/register", registerValidation, register);
 
 /**
  * @route   POST /auth/login
