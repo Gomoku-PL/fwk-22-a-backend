@@ -2,6 +2,7 @@ import { validationResult } from "express-validator";
 import authService from "../../services/auth.service.js";
 import { regenerateSession, destroySession } from "./session.controller.js";
 import { getStorageType } from "../../config/database.js";
+import { rotateCsrfToken } from "../../middleware/csrf.middleware.js";
 
 /**
  * Authentication Controller - GDPR Article 32 Compliant
@@ -48,6 +49,9 @@ export const login = async (req, res) => {
 
     // Regenerate session ID for security after successful login
     regenerateSession(req, res, () => {
+      // Rotate CSRF token after login (security best practice)
+      const newCsrfToken = rotateCsrfToken(req);
+
       // Set secure HTTP-only cookie for refresh token
       res.cookie("refreshToken", result.tokens.refreshToken, {
         httpOnly: true,
@@ -66,6 +70,7 @@ export const login = async (req, res) => {
           accessToken: result.tokens.accessToken,
           expiresIn: result.tokens.expiresIn,
           tokenType: result.tokens.tokenType,
+          csrfToken: newCsrfToken, // Send new CSRF token to client
         },
         metadata: {
           loginTime: new Date().toISOString(),

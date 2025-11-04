@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { Server } from "socket.io";
 import { xssProtection } from "./middleware/xss.middleware.js";
+import { csrfProtection } from "./middleware/csrf.middleware.js";
 
 import gamesRoutes from "./routes/games.routes.js";
 import healthRoutes from "./routes/health.routes.js";
@@ -88,6 +89,11 @@ app.use(
     setHeaders: true,
   })
 );
+
+// CSRF Protection middleware (applied globally; skips GET/HEAD/OPTIONS automatically)
+// Public endpoints (login, register, refresh) should not require CSRF since they create sessions
+// but all state-changing endpoints (POST/PUT/DELETE/PATCH) after login will be protected
+app.use(csrfProtection);
 
 // Initialize database connection
 await connectMongoDB();

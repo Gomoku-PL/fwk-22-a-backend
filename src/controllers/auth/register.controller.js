@@ -3,14 +3,7 @@ import crypto from "node:crypto";
 import User from "../../models/user.model.js";
 import { isUsingMongoDB } from "../../config/database.js";
 
-/**
- * POST /auth/register
- * Minimal data collection per GDPR Articles 5,6,25 (email + password; username optional)
- * - Validates input (format, length)
- * - Ensures email (and username if provided) are unique
- * - Creates user with hashed password (handled by Mongoose pre-save)
- * - Generates an email verification token (simulated send for now)
- */
+
 export const register = async (req, res) => {
     // Validate request body
     const errors = validationResult(req);
