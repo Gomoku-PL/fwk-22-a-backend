@@ -55,6 +55,16 @@ export function csrfProtection(req, res, next) {
     const safe = method === "GET" || method === "HEAD" || method === "OPTIONS";
     if (safe) return next();
 
+    // Exempt public authentication endpoints that CREATE sessions (not modify authenticated state)
+    // These endpoints don't require CSRF since they're the entry points to create a session
+    const publicAuthPaths = [
+        "/api/auth/register",
+        "/api/auth/login",
+        "/api/auth/refresh"
+    ];
+    const isPublicAuth = publicAuthPaths.some(path => req.path === path);
+    if (isPublicAuth) return next();
+
     // Validate token for state-changing requests
     const headerToken = req.get("X-CSRF-Token");
     if (!headerToken) {

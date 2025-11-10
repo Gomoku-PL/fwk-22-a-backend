@@ -1,12 +1,20 @@
 # CSRF Protection - Frontend Integration Guide
 
 ## Overview
-CSRF (Cross-Site Request Forgery) protection is active on all state-changing endpoints (POST, PUT, DELETE, PATCH). The backend generates a unique token per session and validates it on every non-safe request.
+CSRF (Cross-Site Request Forgery) protection is active on all state-changing endpoints (POST, PUT, DELETE, PATCH), **except public authentication endpoints** (register, login, refresh). The backend generates a unique token per session and validates it on every non-safe, non-public request.
+
+## Public Endpoints (CSRF Exempt)
+These endpoints do **not** require a CSRF token:
+- `POST /api/auth/register` - Creates new user (session creation, not modification)
+- `POST /api/auth/login` - Authenticates user (session creation, not modification)
+- `POST /api/auth/refresh` - Refreshes access token (public token exchange)
+
+All other POST/PUT/DELETE/PATCH endpoints **require** CSRF token validation.
 
 ## How It Works
 1. Backend generates a CSRF token and stores it in the session when middleware runs
 2. Token is sent to frontend via `X-CSRF-Token` response header
-3. Frontend stores the token and includes it in `X-CSRF-Token` request header for all POST/PUT/DELETE/PATCH requests
+3. Frontend stores the token and includes it in `X-CSRF-Token` request header for all POST/PUT/DELETE/PATCH requests (except public auth endpoints)
 4. Token is rotated after login; frontend must fetch the new token from login response
 
 ## Frontend Implementation

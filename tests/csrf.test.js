@@ -73,6 +73,47 @@ describe('CSRF Protection', () => {
         });
     });
 
+    describe('Public Authentication Endpoints - CSRF Exempt', () => {
+        it('should allow POST /api/auth/register without CSRF token (public endpoint)', async () => {
+            const res = await agent
+                .post('/api/auth/register')
+                .send({ email: 'csrf-test@example.com', password: 'SecurePass123!' });
+
+            // Should not fail with CSRF error (may fail for other reasons like validation or duplicate)
+            if (res.status === 403) {
+                expect(res.body.code).not.toMatch(/CSRF_/);
+            }
+            // Likely 201 (success) or 400 (validation) or 409 (duplicate) or 503 (MongoDB disabled)
+            expect([201, 400, 409, 503]).toContain(res.status);
+        });
+
+        it('should allow POST /api/auth/login without CSRF token (public endpoint)', async () => {
+            const res = await agent
+                .post('/api/auth/login')
+                .send({ identifier: 'test@example.com', password: 'SecurePass123!' });
+
+            // Should not fail with CSRF error
+            if (res.status === 403) {
+                expect(res.body.code).not.toMatch(/CSRF_/);
+            }
+            // Likely 400 (validation) or 401 (invalid credentials)
+            expect([400, 401]).toContain(res.status);
+        });
+
+        it('should allow POST /api/auth/refresh without CSRF token (public endpoint)', async () => {
+            const res = await agent
+                .post('/api/auth/refresh')
+                .send({});
+
+            // Should not fail with CSRF error
+            if (res.status === 403) {
+                expect(res.body.code).not.toMatch(/CSRF_/);
+            }
+            // Likely 401 (no refresh token)
+            expect(res.status).toBe(401);
+        });
+    });
+
     describe('Token Validation - State-Changing Methods', () => {
         beforeEach(async () => {
             // Get CSRF token before each test
@@ -233,7 +274,7 @@ describe('CSRF Protection', () => {
         });
 
         const protectedEndpoints = [
-            { method: 'post', path: '/api/auth/register', body: { email: 'test@test.com', password: 'Pass123!' } },
+            // Note: /api/auth/register, /api/auth/login, /api/auth/refresh are PUBLIC (CSRF-exempt)
             { method: 'post', path: '/api/auth/logout', body: {} },
             { method: 'delete', path: '/api/data', body: {} },
             { method: 'post', path: '/api/data/request', body: { dataTypes: ['profile'] } },
