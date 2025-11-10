@@ -1,5 +1,4 @@
 import express from "express";
-import { body } from "express-validator";
 import {
   login,
   refreshToken,
@@ -10,52 +9,26 @@ import {
 import { validateSessionSecurity } from "../controllers/auth/session.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 import { register } from "../controllers/auth/register.controller.js";
+import { authValidation } from "../middleware/validation.js";
 
 const router = express.Router();
 
-// Validation middleware
-const loginValidation = [
-  body("identifier")
-    .notEmpty()
-    .withMessage("Email or username is required")
-    .isLength({ min: 3, max: 100 })
-    .withMessage("Identifier must be between 3 and 100 characters"),
-
-  body("password")
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long"),
-];
-
 // Add session security validation to all routes
 router.use(validateSessionSecurity);
-
-// Registration validation (minimal data: email + password; optional username)
-const registerValidation = [
-  body("email").isEmail().withMessage("Valid email is required").normalizeEmail(),
-  body("password")
-    .isString()
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters"),
-  body("username")
-    .optional()
-    .isString()
-    .isLength({ min: 3, max: 30 })
-    .withMessage("Username must be 3-30 characters"),
-];
 
 /**
  * @route   POST /auth/register
  * @desc    Secure user registration (GDPR Articles 5, 6, 25)
  * @access  Public
  */
-router.post("/register", registerValidation, register);
+router.post("/register", authValidation.register, register);
 
 /**
  * @route   POST /auth/login
  * @desc    User login with security checks
  * @access  Public
  */
-router.post("/login", loginValidation, login);
+router.post("/login", authValidation.login, login);
 
 /**
  * @route   POST /auth/refresh

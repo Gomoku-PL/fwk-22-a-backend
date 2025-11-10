@@ -1,22 +1,19 @@
-import { validationResult } from "express-validator";
 import crypto from "node:crypto";
 import User from "../../models/user.model.js";
 import { isUsingMongoDB } from "../../config/database.js";
 
 
 export const register = async (req, res) => {
-    // Validate request body
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, errors: errors.array() });
-    }
+    // Validation handled by middleware (authValidation.register)
 
     try {
-        if (!isUsingMongoDB()) {
-            // For this MVP, we only enable registration when MongoDB is active
+        const allowMemory = process.env.ALLOW_IN_MEMORY_REGISTRATION === "true";
+        if (!isUsingMongoDB() && !allowMemory) {
+            // Enforce persistence unless explicitly overridden
             return res.status(503).json({
                 success: false,
                 message: "Registration unavailable: persistent storage (MongoDB) is disabled",
+                code: "REGISTRATION_PERSISTENCE_REQUIRED"
             });
         }
 
@@ -67,7 +64,6 @@ export const register = async (req, res) => {
         return res.status(201).json({
             success: true,
             message: "Registration successful. Please check your email to verify your account.",
-            // In non-production you may return the token to help QA; omit in production.
             verification: process.env.NODE_ENV === "production" ? undefined : {
                 token: verificationToken,
                 expiresInMinutes: tokenTTLMinutes,
@@ -79,6 +75,11 @@ export const register = async (req, res) => {
                 emailVerified: user.emailVerified,
                 createdAt: user.createdAt,
             },
+            metadata: {
+                persistence: isUsingMongoDB() ? "mongodb" : "memory",
+                warning: !isUsingMongoDB() ? "Ephemeral user: will be lost on server restart" : undefined,
+                gdprCompliance: ["Article 5", "Article 6", "Article 25"],
+            }
         });
     } catch (err) {
         // Handle duplicate key race or other DB errors safely

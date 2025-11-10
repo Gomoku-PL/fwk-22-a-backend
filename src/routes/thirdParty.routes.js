@@ -6,6 +6,7 @@ import {
   getComplianceReport,
   evaluateDataTransfer,
 } from "../controllers/thirdParty.controller.js";
+import { thirdPartyValidation } from "../middleware/validation.js";
 
 const router = Router();
 

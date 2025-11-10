@@ -1,4 +1,3 @@
-import { validationResult } from "express-validator";
 import consentService from "../services/consent.service.js";
 import consentLogsService from "../services/consentLogs.service.js";
 import { getStorageType } from "../config/database.js";
@@ -68,14 +67,7 @@ export const getConsent = async (req, res) => {
  */
 export const updateConsent = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation errors",
-        errors: errors.array(),
-      });
-    }
+    // Validation handled by middleware (consentValidation.update)
 
     const userId = req.headers["user-id"] || req.sessionID || "demo-user";
     const { purposes } = req.body;

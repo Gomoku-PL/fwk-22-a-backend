@@ -9,6 +9,7 @@ import {
   updateConfiguration,
   getComplianceHistory,
 } from "../controllers/updateCompliance.controller.js";
+import { updateComplianceValidation } from "../middleware/validation.js";
 
 const router = express.Router();
 
