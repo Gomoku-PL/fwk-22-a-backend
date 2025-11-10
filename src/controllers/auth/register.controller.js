@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import User from "../../models/user.model.js";
+import userDb from "../../models/userdb.js";
 import { isUsingMongoDB } from "../../config/database.js";
 
 
@@ -29,26 +30,49 @@ export const register = async (req, res) => {
         }
         username = String(username).trim();
 
-        // Uniqueness checks
-        const existingByEmail = await User.findOne({ email: normalizedEmail }).lean();
-        if (existingByEmail) {
-            return res.status(409).json({ success: false, message: "Email already in use" });
-        }
-        const existingByUsername = await User.findOne({ username }).lean();
-        if (existingByUsername) {
-            // Minimal guidance without leaking sensitive info
-            return res.status(409).json({ success: false, message: "Username unavailable" });
-        }
+        let user;
 
-        // Create user; password is hashed by user.model pre-save hook (bcryptjs)
-        const user = new User({
-            email: normalizedEmail,
-            username,
-            password,
-            emailVerified: false,
-        });
+        if (isUsingMongoDB()) {
+            // MongoDB storage
+            // Uniqueness checks
+            const existingByEmail = await User.findOne({ email: normalizedEmail }).lean();
+            if (existingByEmail) {
+                return res.status(409).json({ success: false, message: "Email already in use" });
+            }
+            const existingByUsername = await User.findOne({ username }).lean();
+            if (existingByUsername) {
+                // Minimal guidance without leaking sensitive info
+                return res.status(409).json({ success: false, message: "Username unavailable" });
+            }
 
-        await user.save();
+            // Create user; password is hashed by user.model pre-save hook (bcryptjs)
+            user = new User({
+                email: normalizedEmail,
+                username,
+                password,
+                emailVerified: false,
+            });
+
+            await user.save();
+        } else {
+            // Memory storage
+            // Check if user exists
+            const existingByEmail = await userDb.findUserByEmail(normalizedEmail);
+            if (existingByEmail) {
+                return res.status(409).json({ success: false, message: "Email already in use" });
+            }
+            const existingByUsername = await userDb.findUserByUsername(username);
+            if (existingByUsername) {
+                return res.status(409).json({ success: false, message: "Username unavailable" });
+            }
+
+            // Create user in memory database
+            user = await userDb.createUser({
+                email: normalizedEmail,
+                username,
+                password,
+            });
+        }
 
         // Generate a verification token (to be sent via email). For now, we log it.
         const verificationToken = crypto.randomBytes(32).toString("hex");
@@ -69,7 +93,7 @@ export const register = async (req, res) => {
                 expiresInMinutes: tokenTTLMinutes,
             },
             user: {
-                id: user._id,
+                id: isUsingMongoDB() ? user._id : user.id,
                 email: user.email,
                 username: user.username,
                 emailVerified: user.emailVerified,
