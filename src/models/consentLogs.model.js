@@ -79,6 +79,8 @@ const consentLogSchema = new mongoose.Schema(
         "cookie_banner",
         "email_opt_in",
         "phone_consent",
+        "system_event",
+        
       ],
       required: true,
     },
